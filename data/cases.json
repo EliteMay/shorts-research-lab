@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-10-13",
+  "visual_review_completed": false,
+  "cases": [
+    {
+      "id": "01",
+      "path": "cases/01-jet-engine-discovery.md",
+      "url": "https://www.youtube.com/shorts/ayff-zUROU0",
+      "genre": "science",
+      "pattern": "discovery-problem-chain",
+      "evidence": "partial-transcript"
+    },
+    {
+      "id": "02",
+      "path": "cases/02-moving-uber-comedy.md",
+      "url": "https://www.youtube.com/shorts/9y72T_gptRQ",
+      "genre": "comedy",
+      "pattern": "incongruity-escalation",
+      "evidence": "transcript"
+    },
+    {
+      "id": "03",
+      "path": "cases/03-restoration-process.md",
+      "url": "https://www.youtube.com/shorts/MV-rjhUmfMM",
+      "genre": "restoration",
+      "pattern": "transformation",
+      "evidence": "transcript"
+    },
+    {
+      "id": "04",
+      "path": "cases/04-first-comment-challenge.md",
+      "url": "https://www.youtube.com/shorts/aENiT0SknfU",
+      "genre": "challenge",
+      "pattern": "failure-pivot-result",
+      "evidence": "transcript"
+    },
+    {
+      "id": "05",
+      "path": "cases/05-fortnite-rapid-recap.md",
+      "url": "https://www.youtube.com/shorts/V8p2AAi7hk0",
+      "genre": "gaming",
+      "pattern": "dense-recap",
+      "evidence": "transcript"
+    },
+    {
+      "id": "06",
+      "path": "cases/06-secret-server-curiosity.md",
+      "url": "https://www.youtube.com/shorts/7qSzvGd3HmI",
+      "genre": "gaming",
+      "pattern": "secret-evidence-exploration",
+      "evidence": "transcript"
+    },
+    {
+      "id": "07",
+      "path": "cases/07-century-skillet-story.md",
+      "url": "https://www.youtube.com/shorts/m6VspMUNRec",
+      "genre": "restoration",
+      "pattern": "transformation-emotional-story",
+      "evidence": "transcript"
+    }
+  ]
+}
