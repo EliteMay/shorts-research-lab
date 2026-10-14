@@ -1,0 +1,59 @@
+name: Shorts engine isolated smoke
+on:
+  push:
+    branches:
+      - experiment/purffle-offline-render
+    paths:
+      - '.github/workflows/shorts-engine-smoke.yml'
+      - 'studio/evaluation/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  purffle:
+    name: Purffle fixed-Japanese-script render (no paid APIs)
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install rendering dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-noto-cjk
+      - name: Fetch exact upstream revision and install
+        run: |
+          git clone --no-checkout https://github.com/Chamanrajragu/purffle-shorts.git vendor/purffle-shorts
+          git -C vendor/purffle-shorts checkout --detach bab8d5f97b8452d72287b0ee3af3cb8cc1a23bc8
+          python -m pip install --disable-pip-version-check -e vendor/purffle-shorts
+      - name: Render offline visual placeholders with free Japanese TTS
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          python studio/evaluation/run-purffle.py 2>&1 | tee engine-smoke-output.log
+      - name: Create frame contact sheet for inspection
+        if: success()
+        run: |
+          VIDEO="$(find engine-smoke-output/videos -name '*.mp4' -type f | head -n 1)"
+          ffmpeg -hide_banner -loglevel error -y -i "$VIDEO" -vf "fps=1/5,scale=180:-1,tile=4x1" -frames:v 1 engine-smoke-output/frames.jpg
+      - name: Archive evidence without publishing or uploading to YouTube
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: purffle-isolated-render-evidence
+          path: |
+            engine-smoke-output/videos/*/short.mp4
+            engine-smoke-output/videos/*/captions.srt
+            engine-smoke-output/videos/*/metadata.json
+            engine-smoke-output/videos/*/script.json
+            engine-smoke-output/technical-report.json
+            engine-smoke-output/frames.jpg
+            engine-smoke-output.log
+          if-no-files-found: warn
+          retention-days: 7
