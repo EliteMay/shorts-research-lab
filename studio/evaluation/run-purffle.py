@@ -40,6 +40,9 @@ if video_stream is None or audio_stream is None:
     raise RuntimeError("Missing video or audio stream")
 if (video_stream["width"], video_stream["height"]) != (360, 640):
     raise RuntimeError("Unexpected render dimensions")
+meta_path = video.parent / "metadata.json"
+meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
+actual_duration = float(info.get("format", {}).get("duration", 0))
 report = {
     "status": "rendered_not_quality_approved",
     "purpose": "Check that the third-party renderer can produce a local Japanese storyboard-based MP4.",
@@ -48,11 +51,12 @@ report = {
     "topic": "鍵をなくしたロボット（創作、固定台本）",
     "note": "AI script generation, real visual matching, content retention and viewing quality were NOT evaluated.",
     "tts_requested": "edge",
-    "tts_actual": "Not validated; review runner logs and listen to output. Offline fallback may produce silent/system voice.",
+    "tts_actual": meta.get("voice", "unknown"),
     "visuals": "Offline generated placeholders; not story-matched imagery.",
     "additional_paid_apis_used": False,
     "render_seconds": duration,
-    "actual_video_duration": info.get("format", {}).get("duration"),
+    "actual_video_duration": actual_duration,
+    "within_25_to_35_seconds": 25 <= actual_duration <= 35,
     "video_codec": video_stream.get("codec_name"),
     "video_width": video_stream.get("width"),
     "video_height": video_stream.get("height"),
@@ -61,3 +65,5 @@ report = {
 }
 (out / "technical-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
 print(json.dumps(report, ensure_ascii=False, indent=2))
+if not report["within_25_to_35_seconds"]:
+    raise RuntimeError(f"Target is about 30 seconds, but measured {actual_duration:.2f}s")
