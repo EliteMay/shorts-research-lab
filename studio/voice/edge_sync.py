@@ -50,58 +50,59 @@ def word_cues(narration: str, events: list, max_chars: int = 16) -> list:
         prev = start
     if spans[-1][0] != len(narration):
         raise ValueError('Missing final spoken text')
-    # Choose caption groups globally instead of greedily; short dangling Japanese
-    # fragments like "た。" are unacceptable even if each word boundary is valid.
+    # BudouX finds linguistic phrase boundaries; speech WordBoundary gives time.
+    # The boundary must appear in BOTH. Never force an awkward split to fill width.
+    try:
+        import budoux
+    except ImportError as exc:
+        raise RuntimeError('Japanese phrase segmentation requires budoux==0.9.3') from exc
+    phrases = budoux.load_default_japanese_parser().parse(narration)
+    if ''.join(phrases) != narration:
+        raise ValueError('Japanese phrase segmenter changed the original narration')
+    natural_ends = {0}
+    phrase_cursor = 0
+    for phrase in phrases:
+        phrase_cursor += len(phrase)
+        natural_ends.add(phrase_cursor)
+    if phrase_cursor != len(narration):
+        raise ValueError('Japanese phrase boundaries do not cover the script')
+    # Dynamic programming only across natural boundaries that ALSO coincide
+    # with speech metadata. Long unbreakable phrases are reported for rewriting.
     n = len(spans)
     dp = [float('inf')] * (n + 1)
     prev = [-1] * (n + 1)
     dp[0] = 0
     for j in range(1, n + 1):
-        for i in range(j - 1, -1, -1):
-            char_start = spans[i - 1][0] if i else 0
-            fragment = narration[char_start:spans[j - 1][0]]
+        if spans[j-1][0] not in natural_ends:
+            continue
+        for i in range(j-1, -1, -1):
+            char_start = spans[i-1][0] if i else 0
+            if char_start not in natural_ends:
+                continue
+            fragment = narration[char_start:spans[j-1][0]]
             width = len(fragment)
             if width > max_chars:
                 break
-            milliseconds = spans[j - 1][2] - spans[i][1]
+            milliseconds = spans[j-1][2] - spans[i][1]
             if milliseconds <= 0 or dp[i] == float('inf'):
                 continue
-            crosses_sentence = any(p in fragment[:-1] for p in '。！？!?')
-            cost = 12 + ((width - 11) ** 2) / 3
+            # Favor substantial but readable captions. Do not cross sentence
+            # breaks needlessly; segmentation still comes from actual TTS time.
+            cost = 12 + ((width - 11)**2)/3
             if width < 5:
                 cost += 40 * (5 - width)
-            if width > 15:
-                cost += (width - 15) ** 2 * 2
             if milliseconds < 700:
-                cost += 30
-            if milliseconds > 3400:
-                cost += (milliseconds - 3400) / 75
-            if crosses_sentence:
-                cost += 60
-            if fragment.endswith(('。', '！', '？', '!', '?')):
+                cost += 25
+            if milliseconds > 3500:
+                cost += (milliseconds - 3500)/70
+            if any(p in fragment[:-1] for p in '。！？!?'):
+                cost += 65
+            if fragment.endswith(('。','！','？','!','?')):
                 cost -= 6
-            if fragment.endswith('、'):
-                cost -= 3
-            if j < n:
-                # A TTS word boundary is not always a natural subtitle boundary.
-                # Keep verb endings and auxiliaries together when possible.
-                remainder = narration[spans[j - 1][0]:]
-                if fragment.endswith('っ') and remainder.startswith(('て', 'た')):
-                    cost += 600
-                if fragment.endswith('さ') and remainder.startswith('そう'):
-                    cost += 600
-                if fragment.endswith('そう') and remainder.startswith(('に', 'な')):
-                    cost += 600
-                if (fragment and '\u3040' <= fragment[-1] <= '\u309f'
-                        and fragment[-1] not in 'はにをがもでへのとや'
-                        and remainder.startswith(('ます', 'ました', 'せん', 'です', 'ない', 'した', 'そう', 'かった'))):
-                    cost += 350
-                if fragment.endswith(('は', 'に', 'を', 'が', 'も', 'で', 'と', 'へ', '、')):
-                    cost -= 16
-            if dp[i] + cost < dp[j]:
-                dp[j], prev[j] = dp[i] + cost, i
+            if dp[i]+cost < dp[j]:
+                dp[j], prev[j] = dp[i]+cost, i
     if prev[-1] == -1:
-        raise ValueError('Cannot group captions within maximum width without breaking TTS words')
+        raise ValueError('No natural caption boundary within width and TTS timings; rewrite narration')
     cues = []
     j = n
     while j:
