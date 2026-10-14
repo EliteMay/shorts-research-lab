@@ -1,3 +1,15 @@
+# 作業追記 — 2026-10-15（字幕・映像の品質改善）
+
+- [PR #5](https://github.com/EliteMay/shorts-research-lab/pull/5) をmainへ統合。日本語字幕が単語途中で割れる現象に対して、Node.js標準の単語区切りを使う字幕検査と7つの回帰テストを追加。GitHub ActionsはPASS。
+- 前回の27.667秒の創作ナレーションを再利用し、ロボット・玄関・街・公園・鍵・結末に対応する独自イラストを5場面生成。手で整えた字幕10件を付与した720×1280 MP4を実際に書き出した。H.264/AACをffprobeで検証。
+- 代表的な実フレームを確認し、字幕の単語途中分割と単色背景の意味不一致が改善したことを確認。**人による通し試聴、字幕の厳密な時刻同期、視聴者評価は未実施。公開品質は未承認**。
+- プロトタイプの独自イラストは固定題材用で、汎用AI画像生成は未実装。無料API利用・OpenReelsとの同条件フル動画比較は引き続き[Issue #3](https://github.com/EliteMay/shorts-research-lab/issues/3)で管理。
+- 家PCがオンラインになり、WindowsのNode.js/FFmpegとVALORANT非起動を確認。ただしOpenReelsを端末へ取得・導入する操作は安全性チェックでブロックされたため、Windowsでの実行比較を成功扱いにはしない。
+
+詳細: [studio/CAPTION_QUALITY.md](studio/CAPTION_QUALITY.md)。
+
+---
+
 # 作業報告 — 2026-10-15（Shorts Studio増設・第1段階）
 
 ## Issue #3 追加検証（2026-10-15）
