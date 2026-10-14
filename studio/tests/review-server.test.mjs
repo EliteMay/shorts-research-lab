@@ -2,9 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {once} from 'node:events';
+import {fileURLToPath} from 'node:url';
 
 test('local review server only serves explicitly allowed files',async()=>{
-  const child=spawn(process.execPath,['review/serve.mjs'],{cwd:new URL('..',import.meta.url).pathname,stdio:['ignore','pipe','pipe']});
+  const child=spawn(process.execPath,['review/serve.mjs'],{cwd:fileURLToPath(new URL('..',import.meta.url)),stdio:['ignore','pipe','pipe']});
   try{
     let output='';
     const base=await Promise.race([
