@@ -1,0 +1,11 @@
+{
+  "name": "shorts-studio-quality-gate",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test",
+    "check:example": "node src/quality-check.mjs examples/storyboard.json",
+    "check:ready": "node src/quality-check.mjs examples/storyboard.json --ready"
+  }
+}
