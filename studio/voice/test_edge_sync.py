@@ -54,6 +54,17 @@ class JapaneseSyncTest(unittest.TestCase):
         self.assertEqual(''.join(c['text'] for c in cues), sentence)
         self.assertFalse(any(a['text'].endswith('そう') and b['text'].startswith('に')
                              for a,b in zip(cues,cues[1:])))
+    def test_no_midword_breaks_across_budoux_phrases(self):
+        sentence = 'ロボットは照れくさそうに笑いました。'
+        words = ['ロボット','は','照れ','くさ','そう','に','笑い','ました']
+        cues = word_cues(sentence, [event(w,i*280,260) for i,w in enumerate(words)])
+        self.assertEqual(''.join(c['text'] for c in cues), sentence)
+        for a,b in zip(cues,cues[1:]):
+            self.assertNotEqual((a['text'],b['text']),('ロボットは照れ','くさそうに笑いました。'))
+            self.assertFalse(a['text'].endswith('照れ'))
+            self.assertFalse(a['text'].endswith('くさ'))
+            self.assertFalse(a['text'].endswith('そう') and b['text'].startswith('に'))
+
     def test_normalization(self):
         self.assertEqual(clean('ネコ、Ａ！'),clean('ネコA'))
 if __name__ == '__main__': unittest.main()
