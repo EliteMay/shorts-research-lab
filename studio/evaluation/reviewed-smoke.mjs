@@ -1,9 +1,9 @@
 // Technical-only integration fixture. No external Commons image is used.
-import { mkdir, readFile, writeFile, rm } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, stat } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { stageReviewedAssets } from '../assets/stage-reviewed.mjs';
 const dir='reviewed-smoke-output';
-await rm(dir,{recursive:true,force:true});
+if (await stat(dir).then(()=>true,()=>false)) throw Error('Smoke output already exists: refusing overwrite');
 await mkdir(dir,{recursive:true});
 const pictures=[];
 for(let i=0;i<2;i++){
