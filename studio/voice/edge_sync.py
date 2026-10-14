@@ -50,19 +50,51 @@ def word_cues(narration: str, events: list, max_chars: int = 16) -> list:
         prev = start
     if spans[-1][0] != len(narration):
         raise ValueError('Missing final spoken text')
+    # Choose caption groups globally instead of greedily; short dangling Japanese
+    # fragments like "た。" are unacceptable even if each word boundary is valid.
+    n = len(spans)
+    dp = [float('inf')] * (n + 1)
+    prev = [-1] * (n + 1)
+    dp[0] = 0
+    for j in range(1, n + 1):
+        for i in range(j - 1, -1, -1):
+            char_start = spans[i - 1][0] if i else 0
+            fragment = narration[char_start:spans[j - 1][0]]
+            width = len(fragment)
+            if width > max_chars:
+                break
+            milliseconds = spans[j - 1][2] - spans[i][1]
+            if milliseconds <= 0 or dp[i] == float('inf'):
+                continue
+            crosses_sentence = any(p in fragment[:-1] for p in '。！？!?')
+            cost = 12 + ((width - 11) ** 2) / 3
+            if width < 5:
+                cost += 40 * (5 - width)
+            if width > 15:
+                cost += (width - 15) ** 2 * 2
+            if milliseconds < 700:
+                cost += 30
+            if milliseconds > 3400:
+                cost += (milliseconds - 3400) / 75
+            if crosses_sentence:
+                cost += 60
+            if fragment.endswith(('。', '！', '？', '!', '?')):
+                cost -= 6
+            if fragment.endswith('、'):
+                cost -= 3
+            if dp[i] + cost < dp[j]:
+                dp[j], prev[j] = dp[i] + cost, i
+    if prev[-1] == -1:
+        raise ValueError('Cannot group captions within maximum width without breaking TTS words')
     cues = []
-    cursor = 0
-    first_ms = spans[0][1]
-    for i, (end, _, end_ms) in enumerate(spans):
-        candidate = narration[cursor:end]
-        next_end = spans[i + 1][0] if i + 1 < len(spans) else None
-        if next_end is None or next_end - cursor > max_chars or candidate.endswith(('。','！','？','!','?')):
-            if len(candidate) > max_chars or end_ms <= first_ms:
-                raise ValueError('Word exceeds caption width, or impossible audio timing')
-            cues.append(dict(startMs=first_ms, endMs=end_ms, text=candidate))
-            cursor = end
-            if next_end is not None:
-                first_ms = spans[i + 1][1]
+    j = n
+    while j:
+        i = prev[j]
+        char_start = spans[i - 1][0] if i else 0
+        cues.append({'startMs': spans[i][1], 'endMs': spans[j - 1][2],
+                     'text': narration[char_start:spans[j - 1][0]]})
+        j = i
+    cues.reverse()
     if ''.join(c['text'] for c in cues) != narration:
         raise ValueError('Caption text integrity failure')
     return cues
