@@ -1,3 +1,12 @@
+## 2026-10-15：シーン別の素材レビュー画面／実ナレーション再レンダリング
+
+- [PR #10](https://github.com/EliteMay/shorts-research-lab/pull/10) をmainへ統合。候補写真と台詞・作者・ライセンス情報を比較するローカルWeb UIを追加。確認済みの場合にのみ `review.json` を保存。3確認条件・クレジット・ライセンス確認記録を必須にする。
+- ループバック専用のNodeサーバー、外部HTMLを描画しないテキスト表示、Wikimedia画像URLの制限、CSPを設定。外部パッケージ追加なし。
+- [CI](https://github.com/EliteMay/shorts-research-lab/actions/runs/38614615052)でNode.js **37/37件成功**（モデル検証8件 + サーバースモーク1件を含む）。**ブラウザ画面の操作E2E・実際の画像を見ての利用条件確認は未実施**。
+- 外部TTSで実生成した日本語ナレーションと以前コードで描いた独自イラスト5枚を合わせて、27.776秒 / 720×1280 / H.264映像 + AAC音声、16字幕区間の技術MP4を別途出力。原画は自作の固定題材で、Commons素材は未採用。未公開の技術プレビューであり作品品質の承認なし。
+- [Draft PR #8](https://github.com/EliteMay/shorts-research-lab/pull/8)のPythonユニット＋実TTS検証は[Actions](https://github.com/EliteMay/shorts-research-lab/actions/runs/38615106148)で成功。「かかっ／て」等は改善したが、最終部分で「ロボットは照れ／くさそうに笑いました。」という新たな不自然な字幕切れが観察されるため、**品質優先で未マージを維持**。
+- 主目標のテーマだけで高品質のShortsを1本完成は未達。[Issue #3](https://github.com/EliteMay/shorts-research-lab/issues/3)で続行。
+
 ## 2026-10-15：採用画像→音声・字幕・動画を安全に連結
 
 - [PR #9](https://github.com/EliteMay/shorts-research-lab/pull/9) をmainへマージ。人間による利用条件・内容一致の確認記録がない画像は素材ステージング時点で拒否する。
