@@ -1,3 +1,12 @@
+## 2026-10-15：音声単語境界による字幕同期とMP4プレビュー
+- [PR #6](https://github.com/EliteMay/shorts-research-lab/pull/6)をmainに統合。Edge TTSが返したWordBoundaryを使い、固定日本語創作台本5シーンの音声27.776秒・字幕15区間を実際に生成。
+- 以前は文字数で時刻を推定していたが、今回は読み上げの実タイミングを参照。台本との不一致・未取得の単語位置情報を検査して拒否する。
+- 字幕を全文最適化して孤立した「た。」は解消。なお「かかっ／て」「照れくさ／そう」といった活用語分割は未解決。**品質承認ではない。**
+- 前回制作したシーン対応のオリジナルイラスト5枚と新音声から27.776秒、720×1280、H.264/AACのMP4をローカルで出力（映像と音声トラック、尺はffprobeで確認）。
+- 外部無料のオンラインTTSを使用。追加の有料AI API料金は0円。ローカル完結、自由なテーマのAI画像生成、素材の権利確認の自動化、通し試聴は未実装/未完了。
+- [GitHub Actions](https://github.com/EliteMay/shorts-research-lab/actions/runs/38607009917)で新規Python自動テストと実合成が成功。Windowsで同じ処理の起動と視聴テストは今後。
+- [Issue #3](https://github.com/EliteMay/shorts-research-lab/issues/3)に残課題を引き継ぐ。次は言語学的に自然な字幕分割とライセンス付き映像候補探索・人手承認を一つの制作フローへまとめる。
+
 # 作業追記 — 2026-10-15（字幕・映像の品質改善）
 
 - [PR #5](https://github.com/EliteMay/shorts-research-lab/pull/5) をmainへ統合。日本語字幕が単語途中で割れる現象に対して、Node.js標準の単語区切りを使う字幕検査と7つの回帰テストを追加。GitHub ActionsはPASS。
