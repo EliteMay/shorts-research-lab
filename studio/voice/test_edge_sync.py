@@ -29,6 +29,12 @@ class JapaneseSyncTest(unittest.TestCase):
     def test_overlong_word_fails(self):
         with self.assertRaisesRegex(ValueError,'width'):
             word_cues('機械学習エンジニアに',[event('機械学習エンジニア',0),event('に',1000)],max_chars=7)
+    def test_no_dangling_ta_caption(self):
+        sentence = 'ロボットは来た道を走って戻りました。'
+        words = ['ロボット','は','来た','道','を','走って','戻り','まし','た']
+        cues = word_cues(sentence,[event(w,i*350,300) for i,w in enumerate(words)])
+        self.assertEqual(''.join(x['text'] for x in cues), sentence)
+        self.assertFalse(any(x['text'] == 'た。' for x in cues))
     def test_normalization(self):
         self.assertEqual(clean('ネコ、Ａ！'),clean('ネコA'))
 if __name__ == '__main__': unittest.main()
