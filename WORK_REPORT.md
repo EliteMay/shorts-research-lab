@@ -1,3 +1,10 @@
+## 2026-10-15：実ブラウザ検証とBudouX字幕をmainへ統合
+
+- [PR #11](https://github.com/EliteMay/shorts-research-lab/pull/11) にて、Chromiumのブラウザ操作テストで発見した初期非表示のCSS不具合を修正。候補JSON読込から保存まで・モバイル表示・不正データ拒否を実操作で検証。[失敗run](https://github.com/EliteMay/shorts-research-lab/actions/runs/38617281326) と[修正後成功run](https://github.com/EliteMay/shorts-research-lab/actions/runs/38617473897) に証拠を保存。利用した画像は架空の合成画像で、実Commons画像の権利確認ではない。
+- [PR #8](https://github.com/EliteMay/shorts-research-lab/pull/8)：BudouX 0.9.3の句境界とEdge TTSのWordBoundaryから自然な字幕区間を生成し、位置が両立しなければ失敗として止める。Python単体テストと[実日本語音声CI](https://github.com/EliteMay/shorts-research-lab/actions/runs/38618134661)が成功。27.776秒、5場面、15字幕区間。「かかっ／て」「照れ／くさそう」等が今回の台本で解消。
+- 実音声と固定の独自イラスト5枚で27.776秒・720×1280・H.264/AACの検証MP4を再出力。字幕全文の一致とffprobeの技術検査成功。通し視聴・作品の魅力・テーマ自由の自動映像生成は未完了。
+- [Issue #3](https://github.com/EliteMay/shorts-research-lab/issues/3)継続。追加の有料AI APIは使用していない。
+
 ## 2026-10-15：シーン別の素材レビュー画面／実ナレーション再レンダリング
 
 - [PR #10](https://github.com/EliteMay/shorts-research-lab/pull/10) をmainへ統合。候補写真と台詞・作者・ライセンス情報を比較するローカルWeb UIを追加。確認済みの場合にのみ `review.json` を保存。3確認条件・クレジット・ライセンス確認記録を必須にする。
