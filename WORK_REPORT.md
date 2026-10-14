@@ -1,3 +1,13 @@
+## 2026-10-15：シーン別画像候補の自動検索（第1段階）
+
+- Wikimedia Commons画像検索アダプター、候補の出典・著作者・ライセンス表示の保存、未承認画像を拒否する関数を実装。[PR #7](https://github.com/EliteMay/shorts-research-lab/pull/7)をmainに統合。
+- [GitHub Actions実API検証](https://github.com/EliteMay/shorts-research-lab/actions/runs/38609338730)で`sleeping cat`から4候補の画像メタデータ（CC BY / CC BY-SA表示）を取得。APIキー不要。有料AI API追加費用なし。
+- Node.js標準モックテスト8件と既存NodeテストがCI成功。4画像は全件未承認。ライセンス表示・候補名だけで実際の利用権利・映像と台詞の一致は認定しない。
+- 既存の創作ロボット台本には実写素材が合うとは限らないため、適切な候補がないときは映像生成・オリジナルイラスト等の別経路へ進める。**無関係な画像を勝手に採用しない**。
+- 日本語字幕の活用語分断『かかっ／て』『照れくさ／そう』を減らす試験コードと回帰テストを[Draft PR #8](https://github.com/EliteMay/shorts-research-lab/pull/8)に保存。ただしPythonユニットテストと実音声の再検証ができず、**未検証・未マージ**。
+- 次の工程：素材候補のレビュー・実素材の取得と検証を一貫した制作フローへ結合し、音声字幕と5シーンの映像の内容一致を実MP4で確認する。完成品質の宣言は行わない。
+
+---
 ## 2026-10-15：音声単語境界による字幕同期とMP4プレビュー
 - [PR #6](https://github.com/EliteMay/shorts-research-lab/pull/6)をmainに統合。Edge TTSが返したWordBoundaryを使い、固定日本語創作台本5シーンの音声27.776秒・字幕15区間を実際に生成。
 - 以前は文字数で時刻を推定していたが、今回は読み上げの実タイミングを参照。台本との不一致・未取得の単語位置情報を検査して拒否する。
