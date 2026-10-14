@@ -90,6 +90,8 @@ def word_cues(narration: str, events: list, max_chars: int = 16) -> list:
                     cost += 600
                 if fragment.endswith('さ') and remainder.startswith('そう'):
                     cost += 600
+                if fragment.endswith('そう') and remainder.startswith(('に', 'な')):
+                    cost += 600
                 if (fragment and '\u3040' <= fragment[-1] <= '\u309f'
                         and fragment[-1] not in 'はにをがもでへのとや'
                         and remainder.startswith(('ます', 'ました', 'せん', 'です', 'ない', 'した', 'そう', 'かった'))):
