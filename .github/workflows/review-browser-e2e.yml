@@ -1,0 +1,36 @@
+name: Review UI Chromium E2E
+on:
+  push:
+    branches: [test/review-browser-e2e]
+    paths:
+      - 'studio/review/**'
+      - '.github/workflows/review-browser-e2e.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  chromium-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned browser test runner without changing the repo lockfile
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.55.1
+        working-directory: studio
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+        working-directory: studio
+      - name: Test browser review task end to end
+        run: node review/e2e-smoke.mjs
+        working-directory: studio
+      - name: Save screenshots of synthetic fixtures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shorts-review-chromium-screenshots
+          path: studio/review-e2e-evidence/
+          if-no-files-found: warn
+          retention-days: 3
