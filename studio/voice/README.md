@@ -4,10 +4,10 @@
 
 ## 実行方法
 
-Python 3.11+、ffmpeg/ffprobe、`edge-tts==7.3.1` が必要。これはローカルLLMではなく、**ネットワーク接続を使う外部音声合成サービス**で、可用性・利用条件の確認が必要。有料APIキーは要求しないが、完全オフラインではない。
+Python 3.11+、ffmpeg/ffprobe、`edge-tts==7.3.1` と `budoux==0.9.3` が必要。これはローカルLLMではなく、**ネットワーク接続を使う外部音声合成サービス**で、可用性・利用条件の確認が必要。有料APIキーは要求しないが、完全オフラインではない。
 
 ```sh
-python -m pip install edge-tts==7.3.1
+python -m pip install -r studio/voice/requirements.txt
 python studio/voice/edge_sync.py --script studio/evaluation/sample-ja-story.json --out voice-output
 python -m unittest discover -s studio/voice -p "test_*.py" -v
 ```
@@ -27,6 +27,12 @@ python -m unittest discover -s studio/voice -p "test_*.py" -v
 - ただし「かかっ／て」「照れくさ／そう」などの不自然な活用語境界は残っており、**字幕品質の完成扱いにはしない**。
 
 これらはユーザーに費用が発生する有料AI APIを使わずに実施。GitHub Actionsの一般的な利用枠・サービスの条件は別に適用される。
+
+## 字幕の自然な区切り（Draft検証）
+
+以前の「特定の文字の後だけ分割を避ける」という継ぎ足しのヒューリスティックを廃止。Googleのオープンソース日本語文節分割 **BudouX 0.9.3** の区切りと、Edge TTSの実WordBoundaryが一致する位置に限り字幕を分割する。出力字幕は台本全文と一致させ、1行の文字数上限16文字を守る。自然な位置とTTS位置が一致せず分割できない場合、**自動的な不自然分割には戻さず、台本の再編集が必要として失敗する**。
+
+この実装は「字幕を自然にするための候補」であり、BudouX自体も機械学習による推定なので、完成映像の人間によるレビューが必要。外部の有料AI APIは不要。ライブラリ出典：[google/budoux](https://github.com/google/budoux)。
 
 ## 残課題
 

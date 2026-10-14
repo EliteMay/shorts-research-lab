@@ -1,0 +1,49 @@
+name: Japanese caption inflection validation
+on:
+  push:
+    branches: [fix/japanese-conjugation-caption-breaks]
+    paths:
+      - 'studio/voice/**'
+      - '.github/workflows/caption-inflection-validation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test-and-synthesize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install exact TTS and phrase-model versions
+        run: python -m pip install edge-tts==7.3.1 budoux==0.9.3
+      - name: Validate grouping and review-manifest code
+        run: python -m unittest discover -s studio/voice -p 'test_*.py' -v
+      - name: Ensure FFmpeg installed
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+      - name: Generate real Japanese voice and caption boundaries
+        run: |
+          python studio/voice/edge_sync.py --script studio/evaluation/sample-ja-story.json --out voice-proof
+      - name: Check actual caption splits in the final scene
+        run: |
+          python - <<'PY'
+          import json
+          data=json.load(open('voice-proof/timing.json',encoding='utf8'))
+          captions=[c['text'] for c in data['cues']]
+          print(json.dumps({'cues':captions,'durationMs':data['durationMs']},ensure_ascii=False,indent=2))
+          assert data['durationMs']>20000
+          assert not any(x.endswith(('かかっ','照れくさ')) for x in captions)
+          assert ''.join(captions)==''.join(s['narration'] for s in json.load(open('studio/evaluation/sample-ja-story.json',encoding='utf8'))['scenes'])
+          PY
+      - name: Save caption timing evidence (no public release)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: japanese-inflection-timing-evidence
+          path: voice-proof/
+          if-no-files-found: warn
+          retention-days: 3
