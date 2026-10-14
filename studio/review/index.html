@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src https://upload.wikimedia.org; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Shorts Studio | 素材レビュー</title><link rel="stylesheet" href="review.css">
+</head><body>
+<header class="topbar"><div class="brand"><span class="mark">S</span><div><strong>Shorts Studio</strong><small>制作前の素材レビュー</small></div></div><span class="phase">PHASE 03 / ASSET REVIEW</span></header>
+<main class="shell">
+  <div class="intro"><div><div class="eyebrow">QUALITY FIRST WORKFLOW</div><h1>動画素材を確認する</h1>
+    <p>シーンの台詞を読み、写真の意味と利用条件を確認して採用する。未確認ならここで制作を止められます。</p></div>
+    <div class="status" aria-live="polite"><span class="status-light"></span><span id="progress">候補JSONを読み込んでください</span></div></div>
+  <div class="notice"><strong>重要：</strong>検索結果のライセンス表示は利用許可の証明ではありません。
+    出典の実際の条件、著作者・被写体の権利、台詞との一致を確認してください。<strong>自動承認はしません。</strong></div>
+  <section class="loader" aria-labelledby="load-title"><div><h2 id="load-title">候補データを読み込む</h2>
+    <p>Commons検索で出力した <code>candidates.json</code> を選択。内容はサーバーへアップロードしません。</p></div>
+    <label class="upload" for="sourceFile">候補JSONを選択<input type="file" id="sourceFile" accept="application/json,.json"></label></section>
+  <p id="message" class="message" role="status"></p>
+  <div id="workspace" class="workspace" hidden>
+    <aside class="sidebar"><div class="sidebar-heading">シーン一覧</div><nav id="sceneNav" aria-label="動画シーン"></nav>
+      <div class="side-note">全シーン確認後に採用記録を保存できます。</div></aside>
+    <section id="sceneDetail" class="detail" aria-label="画像候補"></section>
+  </div>
+  <footer id="bottomActions" class="footer" hidden><div><strong id="pendingCount">確認待ち</strong>
+    <p>採用記録に出典・クレジット・確認日を残します。</p></div>
+    <button type="button" id="exportBtn" disabled>採用記録を保存（review.json）</button></footer>
+</main>
+<script type="module" src="review-ui.mjs"></script>
+</body></html>
