@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "topic": "忘れ物をしたロボットの30秒ストーリー（架空）",
+  "audience": "短いオチのある物語を楽しみたい人",
+  "targetSeconds": 30,
+  "story": {
+    "hook": "帰宅直前、ロボットは大切なものを忘れたと気づく",
+    "progression": "街を探し回るが見つからない。最後に胸元を確認する",
+    "payoff": "忘れたと思った鍵は最初から首にかかっていた"
+  },
+  "scenes": [
+    {
+      "id": "hook", "startMs": 0, "endMs": 5500,
+      "narration": "家に帰る直前、ロボットは鍵がないことに気づきました。",
+      "visual": { "description": "帰宅する小さなロボットが鍵を探す。文字のないオリジナルイラスト", "source": "planned", "rights": "pending" },
+      "factualClaims": [], "review": { "visualMatchesNarration": false }
+    },
+    {
+      "id": "search", "startMs": 5500, "endMs": 14500,
+      "narration": "かばんも、ポケットも、通ってきた道も。どこにもありません。",
+      "visual": { "description": "ロボットがかばんを開け、街を探し回る", "source": "planned", "rights": "pending" },
+      "factualClaims": [], "review": { "visualMatchesNarration": false }
+    },
+    {
+      "id": "discovery", "startMs": 14500, "endMs": 23500,
+      "narration": "あきらめたとき、首元で小さな音がしました。",
+      "visual": { "description": "首元で揺れる鍵をゆっくり見せ、観客に気づかせる", "source": "planned", "rights": "pending" },
+      "factualClaims": [], "review": { "visualMatchesNarration": false }
+    },
+    {
+      "id": "payoff", "startMs": 23500, "endMs": 30000,
+      "narration": "鍵は、ずっと自分の首にかかっていたのでした。",
+      "visual": { "description": "鍵を見つめて固まるロボット。最後に小さな笑いの間を置く", "source": "planned", "rights": "pending" },
+      "factualClaims": [], "review": { "visualMatchesNarration": false }
+    }
+  ],
+  "review": { "scriptApproved": false }
+}
