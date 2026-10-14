@@ -1,0 +1,31 @@
+name: Commons scene image API smoke
+on:
+  push:
+    branches: [feat/commons-scene-asset-review]
+    paths:
+      - 'studio/assets/**'
+      - '.github/workflows/shorts-commons-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  commons:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Search one scene without API keys
+        run: node studio/assets/commons-assets.mjs studio/assets/examples/sleeping-cat.json commons-result.json
+      - name: Check output remains unapproved
+        run: node --input-type=module -e "import f from './commons-result.json' with {type:'json'}; if(f.status!=='review-required'||f.scenes.length!==1||f.scenes[0].candidates.some(c=>c.approved)) process.exit(1); console.log('Candidates:',f.scenes[0].candidates.length)"
+      - name: Archive candidate metadata only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: commons-scene-search-metadata
+          path: commons-result.json
+          retention-days: 2
+          if-no-files-found: warn
