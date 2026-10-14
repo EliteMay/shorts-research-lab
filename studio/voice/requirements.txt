@@ -1,0 +1,2 @@
+edge-tts==7.3.1
+budoux==0.9.3
