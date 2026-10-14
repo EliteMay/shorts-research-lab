@@ -48,7 +48,12 @@ jobs:
         with:
           name: purffle-isolated-render-evidence
           path: |
-            engine-smoke-output/
+            engine-smoke-output/videos/*/short.mp4
+            engine-smoke-output/videos/*/captions.srt
+            engine-smoke-output/videos/*/metadata.json
+            engine-smoke-output/videos/*/script.json
+            engine-smoke-output/technical-report.json
+            engine-smoke-output/frames.jpg
             engine-smoke-output.log
           if-no-files-found: warn
           retention-days: 7
