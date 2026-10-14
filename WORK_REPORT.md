@@ -1,3 +1,11 @@
+## 2026-10-15：採用画像→音声・字幕・動画を安全に連結
+
+- [PR #9](https://github.com/EliteMay/shorts-research-lab/pull/9) をmainへマージ。人間による利用条件・内容一致の確認記録がない画像は素材ステージング時点で拒否する。
+- 許可されたCommons画像の直接配信URLに限って取得、HTTPリダイレクトを拒否し、12MiBの取得上限、JPEG/PNG/WebP判定、720×1280への変換、SHA-256固定、既存フォルダへの上書き禁止を実装。
+- `render_reviewed.py` は、素材のSHAと確認記録、台本と字幕の一致を再検査してFFmpegへ渡す。作品品質の承認は自動で行わない。
+- [結合テスト](https://github.com/EliteMay/shorts-research-lab/actions/runs/38612038828)：Node.js 28/28・Python 17/17成功。**自作の単色画像2枚と合成音**による2.417秒・720×1280・H.264/AACの技術MP4の出力・ffprobe確認に成功。
+- **未実施**：実Commons素材の人間による採用と権利調査、実日本語TTSとの組合せでの通し視聴・試聴、検索結果の意味一致を評価するAI、テーマ自由のAI画像生成、Electron UI。公開品質は未達。[Issue #3](https://github.com/EliteMay/shorts-research-lab/issues/3)で継続。
+
 ## 2026-10-15：シーン別画像候補の自動検索（第1段階）
 
 - Wikimedia Commons画像検索アダプター、候補の出典・著作者・ライセンス表示の保存、未承認画像を拒否する関数を実装。[PR #7](https://github.com/EliteMay/shorts-research-lab/pull/7)をmainに統合。
