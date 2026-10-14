@@ -36,7 +36,7 @@ export async function searchCommons(query,{limit=4,fetchImpl=fetch}={}) {
     gsrsearch:query,gsrnamespace:'6',gsrlimit:String(limit),prop:'imageinfo',
     iiprop:'url|size|extmetadata',
     iiextmetadatafilter:'LicenseShortName|LicenseUrl|Artist|ImageDescription'});
-  const response=await fetchImpl(API+'?'+params,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(13000)});
+  const response=await fetchImpl(API+'?'+params,{headers:{Accept:'application/json','User-Agent':'ShortsResearchLab/0.1 (https://github.com/EliteMay/shorts-research-lab)'},signal:AbortSignal.timeout(13000)});
   if(!response?.ok)throw Error('Commons API HTTP '+(response?.status??'unknown'));
   return decodeCommonsCandidates(await response.json());
 }
