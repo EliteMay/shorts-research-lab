@@ -47,6 +47,13 @@ class JapaneseSyncTest(unittest.TestCase):
         cues = word_cues(sentence, [event(w, i * 300, 280) for i,w in enumerate(words)])
         self.assertEqual(''.join(c['text'] for c in cues), sentence)
         self.assertFalse(any(c['text'].endswith('照れくさ') for c in cues))
+    def test_no_split_between_sou_and_ni(self):
+        sentence = 'ロボットは照れくさそうに笑いました。'
+        words = ['ロボット','は','照れ','くさ','そう','に','笑い','ました']
+        cues = word_cues(sentence, [event(w, i*300, 280) for i,w in enumerate(words)])
+        self.assertEqual(''.join(c['text'] for c in cues), sentence)
+        self.assertFalse(any(a['text'].endswith('そう') and b['text'].startswith('に')
+                             for a,b in zip(cues,cues[1:])))
     def test_normalization(self):
         self.assertEqual(clean('ネコ、Ａ！'),clean('ネコA'))
 if __name__ == '__main__': unittest.main()
