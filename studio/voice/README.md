@@ -36,3 +36,19 @@ python -m unittest discover -s studio/voice -p "test_*.py" -v
 4. 本番では素材の著作権と事実主張の検証が必須。音声タイミングテスト合格だけで完成品とはしない。
 
 `studio/voice/edge_sync.py` は今回の音声側の試験的アダプターで、Electron本体は未実装。
+## ローカルの画像と音声からMP4プレビュー
+
+`render_local_preview.py` は、`timing.json` と `voice.wav`、シーンごとの手元の `scene-1.png` ... `scene-N.png` を結合し、日本語字幕を描画した技術確認用MP4を生成する。画像の自動検索や自動生成は**しない**。素材の権利・映像適合性を各自で事前確認する。
+
+```sh
+python studio/voice/render_local_preview.py \
+  --script studio/evaluation/sample-ja-story.json \
+  --timing voice-output/timing.json \
+  --audio voice-output/voice.wav \
+  --images /path/to/your/approved-images \
+  --out /path/to/preview
+```
+
+`preview.mp4` と `render-report.json` を出力する。`qualityApproved: false` は設計上の固定値で、動画出力の成功を作品完成と混同させない。現時点のFFmpegレンダリングはLinuxのGitHub Actions環境とローカル実験環境で検証済み。Windowsで同じコマンドを実行したことはまだない。
+
+2026-10-15の追加試作では、以前作成したロボットのオリジナルイラスト5枚と今回のWordBoundaryによるナレーション・字幕を使い、**27.776秒・720×1280、H.264/AACのMP4を実際に出力**した。字幕には一部不自然な活用語区切りがあるため、公開品質には未達。自由なテーマ→画像→動画の全自動制作はまだ未実装。
