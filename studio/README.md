@@ -28,6 +28,14 @@ npm run check:ready  # 未確認の素材があるため失敗するのが正し
 - [実APIテスト](https://github.com/EliteMay/shorts-research-lab/actions/runs/38609338730)：`sleeping cat` で写真4候補とCC BY / CC BY-SAの表示を取得。**画像の採用は全件未承認**で、内容の意味一致と実使用可能性は未確認。
 - 自由な題材の「画像生成」や「全自動選定」ではなく、現段階は検索候補の自動収集まで。未確認素材を勝手に映像へ採用しない。
 
+## 素材採用の記録から字幕付きMP4へ接続
+
+- [PR #9](https://github.com/EliteMay/shorts-research-lab/pull/9) で、画像検索後の人間の確認記録を必須にした素材取得・正規化・ハッシュ固定と、音声・字幕付きレンダリングを連結した。
+- [使い方](assets/REVIEWED_PIPELINE.md)：`stage-reviewed.mjs` で画像を720×1280へ正規化して保存、`render_reviewed.py` で台本・WordBoundary・画像SHAを再検査して技術MP4を出力する。
+- [E2E](https://github.com/EliteMay/shorts-research-lab/actions/runs/38612038828)：Node.js 28件、Python 17件、合成画像2枚・合成音から2.417秒、720×1280、H.264/AACの動画出力に成功。**これは実際の日本語ナレーションでも実Commons画像でもない技術テスト**。
+- すべての出力で`qualityApproved:false`。画像と台詞の意味一致・権利確認・公開できる品質は自動的には判定できない。
+- 未実装：採用を確認するUI、画像素材の適合性を判定するAI、テーマから台本・絵コンテ・画像まで作る全自動エンジン。
+
 ## 実行済みの限定レンダリング検証
 
 - [動画エンジン比較記録](ENGINE_COMPARISON.md)（実フレーム、字幕、処理時間、未検証を記載）
