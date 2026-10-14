@@ -1,5 +1,12 @@
 # 作業報告 — 2026-10-15（Shorts Studio増設・第1段階）
 
+## Issue #3 追加検証（2026-10-15）
+- GitHub Actionsの隔離環境でPurffleShortsの特定コミットから、固定の日本語創作台本をMP4化。初回41.256秒、台本短縮後27.667秒。
+- 日本語音声はメタデータ上`edge:ja-JP-KeitaNeural`、映像H.264/音声AAC、360×640を確認。追加の有料API呼出なし。
+- 実フレームを確認し、背景はグラデーションのみで意味的に不適切、日本語字幕が途中で分断されることを確認。**技術検証成功、作品の品質は不合格**。
+- OpenReelsのローカルLLM設定と画像API依存をソースで確認。無料でのフル動画生成とWindows実機は未検証。
+- 証拠と継続条件は [studio/ENGINE_COMPARISON.md](studio/ENGINE_COMPARISON.md) と [Issue #3](https://github.com/EliteMay/shorts-research-lab/issues/3) に記録。
+
 ## 今回の実施
 - 既存の研究リポジトリに `studio/` を追加。既存の分析・ケース資料は変更せず維持。
 - 動画制作の品質基準を `studio/REQUIREMENTS.md` に整理。大量生成ではなく30秒の高品質な1本を目指す。
