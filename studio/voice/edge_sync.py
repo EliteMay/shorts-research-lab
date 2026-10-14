@@ -82,6 +82,20 @@ def word_cues(narration: str, events: list, max_chars: int = 16) -> list:
                 cost -= 6
             if fragment.endswith('、'):
                 cost -= 3
+            if j < n:
+                # A TTS word boundary is not always a natural subtitle boundary.
+                # Keep verb endings and auxiliaries together when possible.
+                remainder = narration[spans[j - 1][0]:]
+                if fragment.endswith('っ') and remainder.startswith(('て', 'た')):
+                    cost += 600
+                if fragment.endswith('さ') and remainder.startswith('そう'):
+                    cost += 600
+                if (fragment and '\u3040' <= fragment[-1] <= '\u309f'
+                        and fragment[-1] not in 'はにをがもでへのとや'
+                        and remainder.startswith(('ます', 'ました', 'せん', 'です', 'ない', 'した', 'そう', 'かった'))):
+                    cost += 350
+                if fragment.endswith(('は', 'に', 'を', 'が', 'も', 'で', 'と', 'へ', '、')):
+                    cost -= 16
             if dp[i] + cost < dp[j]:
                 dp[j], prev[j] = dp[i] + cost, i
     if prev[-1] == -1:
