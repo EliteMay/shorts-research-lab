@@ -36,6 +36,13 @@ npm run check:ready  # 未確認の素材があるため失敗するのが正し
 - すべての出力で`qualityApproved:false`。画像と台詞の意味一致・権利確認・公開できる品質は自動的には判定できない。
 - 未実装：採用を確認するUI、画像素材の適合性を判定するAI、テーマから台本・絵コンテ・画像まで作る全自動エンジン。
 
+## シーン別の画像を比較・承認する画面
+
+- [素材レビュー画面](review/README.md) を追加。[PR #10](https://github.com/EliteMay/shorts-research-lab/pull/10) をmainへマージ。Windowsなどで `node studio/review/serve.mjs` を実行し、表示されたローカルURLを開いて `candidates.json` を読み込む。
+- 各場面で画像とナレーション、作者・ライセンス・出典を見比べ、確認が済んだ候補だけを `review.json` に保存。素材の権利と意味一致は**人の確認が必要**で、自動で合法・適切と認定しない。
+- [GitHub Actions](https://github.com/EliteMay/shorts-research-lab/actions/runs/38614615052)で既存テストを含むNode.js **37/37件成功**。ローカルサーバーの配信経路のHTTPテストも成功。**ブラウザUIの操作・見た目E2Eは未実施**。
+- テーマから自動的に素材を決めるAI、実Commons画像の権利確認、Electron統合、レビューの途中保存はまだ未実装。
+
 ## 実行済みの限定レンダリング検証
 
 - [動画エンジン比較記録](ENGINE_COMPARISON.md)（実フレーム、字幕、処理時間、未検証を記載）
