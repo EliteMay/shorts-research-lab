@@ -1,0 +1,18 @@
+{
+  "topic": "鍵をなくしたロボット（架空の短編）",
+  "title": "なくした鍵はどこに？",
+  "hook_text": "鍵が消えた？",
+  "style": "story",
+  "language": "ja",
+  "category": "entertainment",
+  "scenes": [
+    {"narration":"家に帰った小さなロボットは、玄関の前で固まりました。大切な鍵が、どこにも見当たらないのです。","search_query":"small robot apartment keys", "image_prompt":"small cute robot standing puzzled before its apartment door"},
+    {"narration":"かばんを開けても、ポケットを探しても見つかりません。ロボットは、夕方の街をあわてて引き返しました。","search_query":"small robot searching bag", "image_prompt":"robot frantically checking bag and pockets on sunset street"},
+    {"narration":"公園のベンチ、曲がり角、お気に入りの店。思いつく場所を全部探しました。でも、やっぱり鍵はありません。","search_query":"robot searching park", "image_prompt":"little robot looks below park bench under soft sunset"},
+    {"narration":"疲れて立ち止まったとき、胸のあたりから、ちりんと小さな音がしました。ロボットはゆっくり下を向きます。","search_query":"robot looking down surprised", "image_prompt":"close up robot looks down at key hanging around its neck"},
+    {"narration":"なんと鍵は、ずっと首から下がっていたのです。ロボットはしばらく固まって、それから照れくさそうに笑いました。","search_query":"little robot found key", "image_prompt":"robot smiling sheepishly with a key on a necklace at sunset"}
+  ],
+  "description": "鍵をなくした小さなロボットの短い物語。創作です。",
+  "hashtags": ["#ショートストーリー", "#創作", "#Shorts"],
+  "tags": ["ロボット", "ショートストーリー", "創作"]
+}
