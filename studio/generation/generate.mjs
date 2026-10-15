@@ -58,7 +58,7 @@ export async function run(argv=process.argv.slice(2),{generator=generateWithLoca
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
   run().then(({path:folder,report})=>{
     console.log(JSON.stringify({draftFolder:folder,mode:report.kind,
-      scenes:report.expectedOutput.length,qualityApproved:false,
+      scenes:report.scenesCount,qualityApproved:false,
       message:'下書きとして保存しました。音声の尺・根拠・素材と権利・映像品質は未確認です。'},null,2));
   }).catch(e=>{console.error('生成できませんでした: '+e.message);process.exitCode=1;});
 }
