@@ -53,8 +53,9 @@ export function convertTopicDraft(candidate,{topic,targetSeconds=30,mode}={}) {
   const totalChars=normalized.reduce((sum,s)=>sum+count(s.narration),0);
   // The language model is not an audio clock. An estimated band is only
   // diagnostic; real TTS duration replaces all estimated scene times.
-  if(totalChars<85||totalChars>250)
-    throw new Error('30秒動画の初稿として台詞量が極端です（85〜250文字に修正）');
+  const lower=Math.round(85*targetSeconds/30),upper=Math.round(250*targetSeconds/30);
+  if(totalChars<lower||totalChars>upper)
+    throw new Error('初稿の台詞量が尺に対して極端です（'+lower+'〜'+upper+'文字に修正）');
   const weights=normalized.map(s=>count(s.narration));
   const sum=weights.reduce((a,b)=>a+b,0);
   const duration=targetSeconds*1000;
@@ -79,6 +80,8 @@ export function convertTopicDraft(candidate,{topic,targetSeconds=30,mode}={}) {
   };
   const checks=reviewStoryboard(storyboard,{ready:false});
   if(!checks.ok)throw new Error('既存の品質ゲートで不合格: '+checks.errors.map(e=>e.where+': '+e.message).join(' | '));
+  if(checks.warnings.some(w=>w.where.endsWith('.timing')))
+    throw new Error('短すぎるシーンがあります。台本と尺を再調整してください');
   const production={
     topic:trim(topic),title:trim(candidate.title),hook_text:trim(candidate.hookText),
     style:kind==='fiction'?'story':'explanation',language:'ja',category:kind,
@@ -91,7 +94,8 @@ export function convertTopicDraft(candidate,{topic,targetSeconds=30,mode}={}) {
   // UI/media/rights/factual gates remain deliberately unapproved.
   const manifest={
     schemaVersion:1,kind,topic:trim(topic),targetSeconds,
-    timingStatus:'estimated-from-text-not-tts',sourceStatus:'requires-independent-verification',
+    timingStatus:'estimated-from-text-not-tts',scenesCount:normalized.length,
+    sourceStatus:'requires-independent-verification',
     rightsStatus:'not-reviewed',storyboardApproved:false,readyForRendering:false,
     factualClaimsPending:claimCount,
     expectedOutput:['storyboard.json','production-script.json','generation-report.json'],
