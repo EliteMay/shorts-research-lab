@@ -1,3 +1,12 @@
+## 2026-10-15：テーマ→ローカルAI台本・絵コンテの初稿生成
+
+- [PR #12](https://github.com/EliteMay/shorts-research-lab/pull/12) をmainへ統合。テーマを入力するとLM Studio等のOpenAI互換ローカルAPI（127.0.0.1のみ）で日本語30秒Shortsの台本・絵コンテ案を作る `studio/generation/` のCLIを追加した。
+- 同じナレーションを持つ `storyboard.json`（Studioの既存品質ゲート）と `production-script.json`（TTS・Commons候補検索向け）を生成。推定場面時刻・出典の未照合・素材権利の未確認・台本未承認を `generation-report.json` に記録する。
+- モデルのJSON形式が壊れた場合は最大2回まで再生成。事実のURL・検証済みフラグや映像の使用権限はモデルの発言を信用せず強制未確認。既存下書きは上書きせず、失敗時は保存しない。Node標準機能だけを使用し有料APIキー不要。
+- [GitHub Actions](https://github.com/EliteMay/shorts-research-lab/actions/runs/38676353921)でNode 49/49成功。ローカル模擬HTTPサーバー経由のCLI本体起動→JSON3件生成まで実検証した。
+- **ブロッカー**：家PCはオフラインで、ローカルLLM実モデルの日本語台本の出来・推論時間・JSON適合率は未測定。画像モデルからの自由テーマ映像自動生成と最終MP4/人間の品質レビューは未実装。AI下書きを完成品と扱わない。
+- 操作と検証方法： [studio/generation/README.md](studio/generation/README.md)。次工程はLM Studioの実モデルで生成結果を採点し、映像素材の生成/レビュー導線へ接続。Issue #3継続。
+
 ## 2026-10-15：実ブラウザ検証とBudouX字幕をmainへ統合
 
 - [PR #11](https://github.com/EliteMay/shorts-research-lab/pull/11) にて、Chromiumのブラウザ操作テストで発見した初期非表示のCSS不具合を修正。候補JSON読込から保存まで・モバイル表示・不正データ拒否を実操作で検証。[失敗run](https://github.com/EliteMay/shorts-research-lab/actions/runs/38617281326) と[修正後成功run](https://github.com/EliteMay/shorts-research-lab/actions/runs/38617473897) に証拠を保存。利用した画像は架空の合成画像で、実Commons画像の権利確認ではない。
