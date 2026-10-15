@@ -2,9 +2,17 @@
 
 `shorts-research-lab` の分析で得た構成原理を活用し、**量より品質**を優先してShortsを制作するための独立領域です。
 
+## テーマからローカルAIで初稿を作る（2026-10-15）
+
+- [PR #12](https://github.com/EliteMay/shorts-research-lab/pull/12)：日本語のテーマ1つから、LM Studio等のローカルLLMで**未承認の台本・絵コンテ・制作スクリプト**を生成するCLIを追加。
+- [起動方法](generation/README.md)：`node studio/generation/generate.mjs --topic "鍵をなくしたロボット" --out "D:\\AI\\experiments\\shorts-draft-01" --mode fiction`。外部の有料AI APIは利用せず、127.0.0.1のOpenAI互換ローカルサーバーだけを使用。
+- 台本の構造・フック/進展/結末・4〜8シーン、仮の編集尺、映像候補の検索語/生成指示、事実主張を検査。既存の `storyboard.json` 品質ゲートと `voice/edge_sync.py`/`assets/commons-assets.mjs` 向け `production-script.json` を同時出力。
+- 事実の出典URL・権利・台本承認はローカルモデルが自称しても信頼しない。台本/映像素材/ソースは人が実際に確認するまで**全部未承認**。
+- [GitHub CI](https://github.com/EliteMay/shorts-research-lab/actions/runs/38676353921)：49件のNodeテスト成功。模擬のローカルHTTP LLMを使ってCLI→JSONファイルの実作成まで検証。**実LM Studioの台本品質は家PCがオフラインで未検証**、AI映像生成や完成MP4への一貫した実運用も未実装。
+
 ## 現在動くもの
 
-台本・絵コンテの品質ゲートに加えて、**日本語字幕の単語途中分割や台本との不一致を検知する品質ゲート**を実装しています。 [字幕の品質改善記録](CAPTION_QUALITY.md) で原理と未検証点を説明しています。**自由テーマからの高品質なAI動画生成、Electron UI、素材の自動選定・完成品質確認はまだ未実装**です。確認済み素材の取得とプレビュー生成処理は実装済み。日本語音声の生成と素材候補の取得、字幕付きMP4の技術試作は別工程として動いています。
+台本・絵コンテの品質ゲートに加えて、**日本語字幕の単語途中分割や台本との不一致を検知する品質ゲート**を実装しています。 [字幕の品質改善記録](CAPTION_QUALITY.md) で原理と未検証点を説明しています。**自由テーマからの高品質なAI映像生成、Electron UI、素材の自動選定・完成品質確認はまだ未実装**です。台本・絵コンテのローカルAI初稿生成はCLIとして実装済み。確認済み素材の取得とプレビュー生成処理は実装済み。日本語音声の生成と素材候補の取得、字幕付きMP4の技術試作は別工程として動いています。
 
 ```sh
 cd studio
