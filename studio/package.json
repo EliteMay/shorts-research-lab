@@ -9,6 +9,10 @@
     "test": "node --test",
     "check:example": "node src/quality-check.mjs examples/storyboard.json",
     "check:ready": "node src/quality-check.mjs examples/storyboard.json --ready",
-    "generate:draft": "node generation/generate.mjs"
+    "generate:draft": "node generation/generate.mjs",
+    "start:editor": "node editor/server.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "1.56.1"
   }
 }

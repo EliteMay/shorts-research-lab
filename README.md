@@ -32,6 +32,9 @@ YouTube Shortsをジャンル横断で分析し、「人がなぜ見続けるの
 
 ## Shorts Studio（制作機能の増設）
 
+- **新規（2026-10-18）**：[英語チャットShortsのローカル制作エディター](studio/editor/README.md)。台本/時刻/背景MP4を編集・プレビュー・自動保存するWeb UI。`cd studio && npm ci && npm run start:editor`。**無音の技術MP4**は書き出し可能。英語音声つき公開用動画は未完成。
+
+
 - [Shorts Studioの要件](studio/REQUIREMENTS.md)：量より質、30秒の日本語動画を1本完成させる目標と完成条件。
 - [Studio開発と品質ゲート](studio/README.md)：現在の実装、実行手順、今後の比較検証。
 - [テーマから台本・絵コンテの下書きを生成](studio/generation/README.md)：ローカルLLM向けCLI、品質検査、制作スクリプトの生成。模擬モデルのCIは成功、家PC実機モデルの創作評価は未実施。

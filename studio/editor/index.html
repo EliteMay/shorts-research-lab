@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Shorts Studio | Chat Editor</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="identity"><div class="brand-symbol">S<span>●</span></div><div><strong>Shorts Studio</strong><span class="subhead">STORY WORKSPACE <b>01</b></span></div></div>
+  <div class="top-controls">
+    <label class="sr-only" for="projectSelect">プロジェクトを選択</label>
+    <select id="projectSelect" aria-label="プロジェクトを選択"></select>
+    <button type="button" id="newProject" class="outline-button">＋ 新規プロジェクト</button>
+    <span id="saveStatus" class="save-pill" role="status" aria-live="polite">接続中…</span>
+  </div>
+</header>
+<main id="workspace" class="workspace" hidden>
+  <section class="editor-panel" aria-label="会話の編集">
+    <div class="panel-head"><span class="eyebrow">01 / SCRIPT</span><h1>会話をつくる</h1><p>セリフと表示する秒数を編集。変更は自動で保存されます。</p></div>
+    <div class="settings-grid">
+      <label class="field title-field">作品タイトル<input id="projectTitle" maxlength="100" autocomplete="off"></label>
+      <label class="field">動画の長さ（秒）<input id="durationInput" type="number" min="10" max="90" step="1"></label>
+    </div>
+    <div class="section-head"><div><h2>メッセージ</h2><span id="messageCount" class="muted">0 / 40</span></div><button id="addMessage" class="small-button" type="button">＋ セリフ追加</button></div>
+    <div id="messageList" class="message-list"></div>
+    <div class="script-bottom"><button id="importScript" class="text-button" type="button">JSONを読み込む</button><input type="file" id="importFile" accept=".json,application/json" hidden><button id="exportScript" class="text-button" type="button">JSONを書き出す</button></div>
+  </section>
+  <section class="preview-panel" aria-label="動画のプレビュー">
+    <div class="preview-head"><div><span class="eyebrow">02 / PREVIEW</span><h2>プレビュー</h2></div><span class="preview-label">9:16 · 1080 × 1920</span></div>
+    <div class="phone-zone">
+      <div class="video-frame" id="videoFrame">
+        <div class="conversation-frame">
+          <div class="conversation-top"><span class="back-icon">‹</span><div class="avatar-circle">✦</div><div><strong id="chatTitle">Group Chat</strong><small>messages</small></div><span class="dots">•••</span></div>
+          <div id="chatMessages" class="chat-messages" aria-label="再生時点までの会話"></div>
+        </div>
+        <div class="background-frame"><video id="backgroundVideo" muted playsinline loop preload="metadata"></video><div id="backgroundFallback" class="background-fallback"><div class="orb orb-a"></div><div class="orb orb-b"></div><span>BACKGROUND PREVIEW</span><strong>MP4を取り込むと<br>ここで再生</strong></div></div>
+        <div class="film-grain"></div>
+      </div>
+    </div>
+    <div class="playback">
+      <div class="playback-tools"><button id="playButton" class="play-button" type="button" aria-label="再生">▶</button><span id="timeLabel" class="time-label">00:00 / 00:32</span><span class="demo-note">画面プレビュー（音声なし）</span></div>
+      <input type="range" id="timeSlider" min="0" max="32" step=".1" value="0" aria-label="再生位置">
+      <div id="timeline" class="timeline" aria-label="セリフの表示タイミング"></div>
+    </div>
+  </section>
+  <aside class="tools-panel" aria-label="素材と制作状態">
+    <div class="panel-head"><span class="eyebrow">03 / ASSETS</span><h2>背景映像</h2><p>手持ちのMP4を取り込んで、会話と一緒にプレビューできます。</p></div>
+    <div class="asset-card">
+      <div class="asset-icon">▣</div><strong id="backgroundName">背景動画なし</strong>
+      <p id="backgroundDetail">64MB以下のMP4。著作権・使用条件は取り込み前に確認してください。</p>
+      <label class="upload-label" for="backgroundInput">MP4を選択<input type="file" id="backgroundInput" accept="video/mp4,.mp4" hidden></label>
+    </div>
+    <div class="divider-line"></div>
+    <span class="eyebrow">WORKFLOW</span>
+    <div class="flow-step active"><span class="step-number">01</span><div><strong>台本と画面プレビュー</strong><small>今回の実装範囲</small></div><span class="step-state">利用可</span></div>
+    <div class="flow-step"><span class="step-number">02</span><div><strong>キャラクター別音声</strong><small>音質・ライセンス検証後</small></div><span class="step-state dim">未実装</span></div>
+    <div class="flow-step"><span class="step-number">03</span><div><strong>MP4の本書き出し</strong><small>プレビューと同じ構成を採用予定</small></div><span class="step-state dim">未実装</span></div>
+    <section class="export-card" aria-labelledby="export-title">
+      <span class="eyebrow">04 / EXPORT</span>
+      <h2 id="export-title">動画を書き出す</h2>
+      <p>チャット画面と動く背景を合成した720×1280のMP4を作ります。現在は<strong>音声なしの技術プレビュー</strong>です。</p>
+      <label class="export-rights"><input id="rightsChecked" type="checkbox"> この背景動画の使用権を自分で確認しました</label>
+      <button type="button" id="renderButton" class="render-button" disabled>MP4プレビューを書き出す</button>
+      <p id="renderStatus" class="render-status" role="status" aria-live="polite">背景を取り込むと書き出せます。</p>
+      <a id="downloadRender" class="render-download" download="shorts-chat-preview.mp4" hidden>生成したMP4を保存</a>
+    </section>
+    <div class="info-note"><strong>品質優先</strong><p>書き出しは技術プレビューです。声・BGM・字幕の同期と公開品質の承認は未実装です。</p></div>
+  </aside>
+</main>
+<div id="emptyState" class="empty" hidden>
+  <div class="empty-symbol">✦</div><h1>最初のストーリーをつくろう</h1><p>サンプル会話つきの新規プロジェクトを作り、すぐに編集を始められます。</p><button type="button" id="emptyCreate">＋ プロジェクトを作成</button>
+</div>
+<div id="fatalError" class="fatal-error" role="alert" hidden></div>
+<script type="module" src="app.mjs"></script>
+</body>
+</html>
