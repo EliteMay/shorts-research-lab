@@ -1,3 +1,11 @@
+## 2026-10-18：英語Chat Shortsの制作エディター基盤
+
+- 英語チャットコメディを第一制作ジャンルとして、ChatGPTで台本検討→ローカルWebエディターで制作→実コンポジションで音声・動画化→品質検査→将来Electron化と段階分離。日本語30秒の既存実験は破壊せず保持。
+- `studio/editor/` にNode標準HTTPサーバー+Chat UI、9:16 CSSプレビュー、秒数指定・再生/シーク、64MiB以下MP4取込、ローカル`project.json`保存、JSON台本入出力を実装。テキストは`textContent`、Origin/Host/CSP、スキーマ・時刻・revision衝突・安全なAsset Pathを検査。巨大依存なし。
+- Windows家PCで既存テスト含むNode 56件PASS（競合保存の同時PUT検査を含む）。Chrome E2Eで新規作成→編集→自動保存/再読込→MP4取込→再読込→JSON入出力→390px画面の横溢れなし→JS例外なしを確認。
+- 実画面で大量メッセージの表示切れを検出したため、同時表示の最新3件へ制限。コンポジションによるWYSIWYG / キャラクター音声 / 最終MP4書き出し / 著作権承認 / 一括生成は**未実装**。技術プレビューの正常動作と公開可能品質を混同しない。
+- 今回の編集データはテスト用の一時保存ルート（端末実機）を使い、GitHubへ動画・素材は追加しない。詳細は [studio/editor/README.md](studio/editor/README.md)。
+
 ## 2026-10-15：テーマ→ローカルAI台本・絵コンテの初稿生成
 
 - [PR #12](https://github.com/EliteMay/shorts-research-lab/pull/12) をmainへ統合。テーマを入力するとLM Studio等のOpenAI互換ローカルAPI（127.0.0.1のみ）で日本語30秒Shortsの台本・絵コンテ案を作る `studio/generation/` のCLIを追加した。
