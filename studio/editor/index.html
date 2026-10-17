@@ -58,7 +58,16 @@
     <div class="flow-step active"><span class="step-number">01</span><div><strong>台本と画面プレビュー</strong><small>今回の実装範囲</small></div><span class="step-state">利用可</span></div>
     <div class="flow-step"><span class="step-number">02</span><div><strong>キャラクター別音声</strong><small>音質・ライセンス検証後</small></div><span class="step-state dim">未実装</span></div>
     <div class="flow-step"><span class="step-number">03</span><div><strong>MP4の本書き出し</strong><small>プレビューと同じ構成を採用予定</small></div><span class="step-state dim">未実装</span></div>
-    <div class="info-note"><strong>品質優先</strong><p>この画面は編集と保存の基盤です。現時点では字幕付き動画の完成や自動投稿は行いません。</p></div>
+    <section class="export-card" aria-labelledby="export-title">
+      <span class="eyebrow">04 / EXPORT</span>
+      <h2 id="export-title">動画を書き出す</h2>
+      <p>チャット画面と動く背景を合成した720×1280のMP4を作ります。現在は<strong>音声なしの技術プレビュー</strong>です。</p>
+      <label class="export-rights"><input id="rightsChecked" type="checkbox"> この背景動画の使用権を自分で確認しました</label>
+      <button type="button" id="renderButton" class="render-button" disabled>MP4プレビューを書き出す</button>
+      <p id="renderStatus" class="render-status" role="status" aria-live="polite">背景を取り込むと書き出せます。</p>
+      <a id="downloadRender" class="render-download" download="shorts-chat-preview.mp4" hidden>生成したMP4を保存</a>
+    </section>
+    <div class="info-note"><strong>品質優先</strong><p>書き出しは技術プレビューです。声・BGM・字幕の同期と公開品質の承認は未実装です。</p></div>
   </aside>
 </main>
 <div id="emptyState" class="empty" hidden>

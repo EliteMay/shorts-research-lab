@@ -834,3 +834,76 @@ select:focus-visible {
     scroll-behavior: auto !important;
   }
 }
+
+/* Export milestone: secondary action below the editing workflow. */
+.export-card {
+  margin-top: 27px;
+  padding: 19px;
+  background: #172332;
+  border: 1px solid #364657;
+  border-radius: 13px;
+}
+.export-card h2 {
+  font-size: 17px;
+  margin: 7px 0;
+}
+.export-card p {
+  color: #a9b9c8;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.export-card p strong {
+  color: #e0eaf4;
+}
+.export-rights {
+  display: flex;
+  gap: 9px;
+  align-items: start;
+  margin: 19px 0 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #d6e4f4;
+  cursor: pointer;
+}
+.export-rights input {
+  margin-top: 4px;
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+}
+.render-button {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 13px 10px;
+  background: #b6f37a;
+  color: #20301d;
+  font-weight: 800;
+  font-size: 13px;
+}
+.render-button:disabled {
+  color: #8ca3a9;
+  background: #293b42;
+}
+.render-button:not(:disabled):hover {
+  background: #d3ff9e;
+}
+.render-status {
+  margin-top: 13px;
+  min-height: 22px;
+}
+.render-download {
+  display: block;
+  margin-top: 12px;
+  padding: 11px 10px;
+  border: 1px solid #9bc979;
+  border-radius: 9px;
+  color: #dbffc0;
+  text-decoration: none;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+.render-download[hidden] {
+  display: none;
+}

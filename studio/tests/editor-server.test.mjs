@@ -92,3 +92,26 @@ test('parallel writes cannot silently overwrite a competing revision', async (t)
   assert.ok(['First change', 'Second change'].includes(saved.title));
   assert.equal(saved.revision, 1);
 });
+
+test('render endpoint requires explicit rights check, background, and valid revision', async (t) => {
+  const { call } = await withServer(t);
+  const created = (await (await call('/api/projects', { method: 'POST' })).json()).project;
+  const url = '/api/projects/' + created.id;
+  const defaultHeaders = { 'Content-Type': 'application/json' };
+  const withoutRights = await call(url + '/render', {
+    method: 'POST', headers: defaultHeaders,
+    body: JSON.stringify({ rightsChecked: false, revision: created.revision })
+  });
+  assert.equal(withoutRights.status, 400);
+  const noBackground = await call(url + '/render', {
+    method: 'POST', headers: defaultHeaders,
+    body: JSON.stringify({ rightsChecked: true, revision: created.revision })
+  });
+  assert.equal(noBackground.status, 400);
+  assert.deepEqual(await (await call(url + '/render')).json(), { state: 'idle' });
+  assert.equal((await call(url + '/export')).status, 404);
+  assert.equal((await call(url + '/render', {
+    method: 'POST', headers: { Origin: 'http://evil.local', ...defaultHeaders },
+    body: JSON.stringify({ rightsChecked: true, revision: 0 })
+  })).status, 403);
+});

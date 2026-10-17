@@ -39,9 +39,10 @@ async function listAndSelect(id) {
 }
 async function openProject(id) {
   pause();
-  if (!id) { $('workspace').hidden = true; $('emptyState').hidden = false; project = null; return; }
+  if (!id) { clearTimeout(renderPoll); $('workspace').hidden = true; $('emptyState').hidden = false; project = null; return; }
   const { project: p } = await request('/api/projects/' + id);
   project = p;
+  $('workspace').dataset.projectId = p.id;
   dirty = false; hasConflict = false; playbackSeconds = 0;
   $('emptyState').hidden = true; $('workspace').hidden = false;
   $('projectTitle').value = p.title;
@@ -49,6 +50,10 @@ async function openProject(id) {
   lastBubbleKey = '';
   renderEditor();
   setupBackground();
+  $('rightsChecked').checked = false;
+  rendering = false;
+  updateRenderControls();
+  void refreshRenderState();
   updatePreview();
   status('保存済み');
   $('projectSelect').value = id;
@@ -65,6 +70,8 @@ function changed() {
   if (!project || hasConflict) return;
   dirty = true;
   status('編集中…', 'saving');
+  $('downloadRender').hidden = true;
+  $('renderStatus').textContent = '変更があります。保存後に再書き出ししてください。';
   clearTimeout(timer);
   timer = setTimeout(() => flushSave().catch(showError), 550);
 }
@@ -229,6 +236,7 @@ function setupBackground() {
   $('backgroundName').textContent = file ? '背景MP4 取込済み' : '背景動画なし';
   $('backgroundDetail').textContent = file ? 'ローカル保存済み。再生位置に追従します。' : '64MB以下のMP4。権利と使用条件を確認してから取り込んでください。';
   $('backgroundInput').value = '';
+  updateRenderControls();
   $('videoFrame').querySelector('.background-frame').classList.toggle('has-video', Boolean(file));
   if (file) {
     video.src = '/api/projects/' + project.id + '/background?r=' + project.revision;
@@ -251,6 +259,9 @@ async function uploadBackground(file) {
     project.updatedAt = result.updatedAt;
     project.background = result.background;
     setupBackground();
+    $('rightsChecked').checked = false;
+    updateRenderControls();
+    void refreshRenderState();
     status('背景も保存済み');
   } catch (error) { if (error.status === 409) hasConflict = true; showError(error); }
 }
@@ -291,6 +302,62 @@ function exportJson() {
   const a = document.createElement('a'); a.href = url; a.download = 'shorts-chat-script.json'; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+let rendering = false;
+let renderPoll = null;
+function updateRenderControls() {
+  $('renderButton').disabled = rendering || !project?.background.file || !$('rightsChecked').checked || hasConflict;
+  $('renderButton').textContent = rendering ? '書き出し中…' : 'MP4プレビューを書き出す';
+}
+async function refreshRenderState() {
+  clearTimeout(renderPoll);
+  if (!project) return;
+  const viewing = project.id;
+  try {
+    const data = await request('/api/projects/' + viewing + '/render');
+    if (project?.id !== viewing) return;
+    rendering = data.state === 'running';
+    if (rendering) {
+      $('renderStatus').textContent = data.phase || '書き出し中…';
+      $('downloadRender').hidden = true;
+      renderPoll = setTimeout(refreshRenderState, 1250);
+    } else if (data.state === 'ready') {
+      $('renderStatus').textContent = '技術プレビュー完成：' + data.report.durationSeconds.toFixed(1) + '秒（音声なし）';
+      $('downloadRender').href = '/api/projects/' + viewing + '/export';
+      $('downloadRender').hidden = false;
+    } else {
+      $('renderStatus').textContent = data.state === 'failed' ? data.phase : 'このプロジェクトの書き出しはまだありません。';
+      $('downloadRender').hidden = true;
+    }
+    updateRenderControls();
+  } catch (error) {
+    $('renderStatus').textContent = '書き出し状態の確認に失敗：' + error.message;
+    rendering = false; updateRenderControls();
+  }
+}
+async function beginRender() {
+  if (!project || rendering || !project.background.file || !$('rightsChecked').checked) return;
+  const id = project.id;
+  try {
+    await flushSave();
+    const data = await request('/api/projects/' + id + '/render', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ revision: project.revision, rightsChecked: true })
+    });
+    if (data.state !== 'running') throw Error('The render did not start');
+    rendering = true;
+    $('downloadRender').hidden = true;
+    $('renderStatus').textContent = '書き出しを開始しました';
+    updateRenderControls();
+    await refreshRenderState();
+  } catch (error) {
+    rendering = false;
+    $('renderStatus').textContent = '書き出せませんでした：' + error.message;
+    updateRenderControls();
+  }
+}
+$('rightsChecked').addEventListener('change', updateRenderControls);
+$('renderButton').addEventListener('click', beginRender);
+
 $('projectTitle').addEventListener('input', e => {
   if (!project) return;
   project.title = e.target.value;

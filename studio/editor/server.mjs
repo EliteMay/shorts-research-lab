@@ -8,6 +8,7 @@ import {
   DEFAULT_PROJECT_DIR, createProject, loadProject, listProjects, saveProject,
   isProjectId, projectAssetPath, attachBackground
 } from './project.mjs';
+import { renderChatVideo, readCurrentExport, outputFile } from './render.mjs';
 
 const home = path.dirname(fileURLToPath(import.meta.url));
 const staticFiles = new Map([
@@ -68,6 +69,7 @@ async function serveMp4(req, res, root, id) {
 }
 export function createEditorServer({ root = DEFAULT_PROJECT_DIR } = {}) {
   const locks = new Map();
+  const renderJobs = new Map();
   async function writeLocked(id, action) {
     const preceding = locks.get(id) || Promise.resolve();
     let release;
@@ -100,7 +102,7 @@ export function createEditorServer({ root = DEFAULT_PROJECT_DIR } = {}) {
       if (req.method === 'POST' && pathname === '/api/projects') {
         send(res, 201, { project: await createProject(root) }); return;
       }
-      const hit = /^\/api\/projects\/(p-[0-9a-f-]+)(?:\/(background))?$/.exec(pathname);
+      const hit = /^\/api\/projects\/(p-[0-9a-f-]+)(?:\/(background|render|export))?$/.exec(pathname);
       if (!hit || !isProjectId(hit[1])) { send(res, 404, { error: 'Not found' }); return; }
       const id = hit[1], subroute = hit[2];
       if (req.method === 'GET' && !subroute) { send(res, 200, { project: await loadProject(root, id) }); return; }
@@ -131,6 +133,57 @@ export function createEditorServer({ root = DEFAULT_PROJECT_DIR } = {}) {
           await unlink(dest).catch(() => {});
           throw error;
         } finally { await unlink(tmp).catch(() => {}); }
+        return;
+      }
+      if (req.method === 'GET' && subroute === 'render') {
+        const job = renderJobs.get(id);
+        const ready = await readCurrentExport(root, id);
+        if (job?.state === 'running') send(res, 200, { state: 'running', phase: job.phase });
+        else if (ready) send(res, 200, { state: 'ready', report: ready });
+        else if (job?.state === 'failed') send(res, 200, { state: 'failed', phase: job.phase });
+        else send(res, 200, { state: 'idle' });
+        return;
+      }
+      if (req.method === 'POST' && subroute === 'render') {
+        if (!(req.headers['content-type'] || '').startsWith('application/json')) {
+          send(res, 415, { error: 'JSON required' }); return;
+        }
+        let body;
+        try { body = JSON.parse((await bodyBuffer(req, 1024)).toString('utf8')); }
+        catch (error) { if (error.status) throw error; send(res, 400, { error: 'Invalid JSON' }); return; }
+        if (body.rightsChecked !== true) {
+          send(res, 400, { error: 'Please confirm background usage rights first' }); return;
+        }
+        const project = await loadProject(root, id);
+        if (!project.background.file) { send(res, 400, { error: 'Background MP4 is required' }); return; }
+        if (body.revision !== project.revision) {
+          send(res, 409, { error: 'Project has changed. Reload before rendering.' }); return;
+        }
+        if ([...renderJobs.values()].some(job => job.state === 'running')) {
+          send(res, 409, { error: 'Another export is already running' }); return;
+        }
+        const job = { state: 'running', phase: '準備中' };
+        renderJobs.set(id, job);
+        const baseUrl = 'http://127.0.0.1:' + req.socket.localPort;
+        // Work runs outside the request. Only a single render may consume Chrome/FFmpeg at a time.
+        void renderChatVideo({ root, id, baseUrl, onProgress: phase => { job.phase = phase; } })
+          .then(() => { job.state = 'ready'; job.phase = '書き出し完了'; })
+          .catch(error => {
+            job.state = 'failed'; job.phase = '書き出し失敗。サーバーログを確認してください。';
+            console.error('[Shorts Studio render]', error);
+          });
+        send(res, 202, { state: job.state, phase: job.phase });
+        return;
+      }
+      if (req.method === 'GET' && subroute === 'export') {
+        const report = await readCurrentExport(root, id);
+        if (!report) { send(res, 404, { error: 'No up-to-date export' }); return; }
+        const file = outputFile(root, id);
+        res.writeHead(200, {
+          ...secureHeaders, 'Content-Type': 'video/mp4', 'Content-Length': report.sizeBytes,
+          'Content-Disposition': 'attachment; filename="shorts-chat-preview.mp4"'
+        });
+        createReadStream(file).on('error', () => res.destroy()).pipe(res);
         return;
       }
       if (req.method === 'GET' && subroute === 'background') { await serveMp4(req, res, root, id); return; }

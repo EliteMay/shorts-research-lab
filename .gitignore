@@ -1,0 +1,3 @@
+# Local dependencies and generated UI test evidence
+studio/node_modules/
+studio/review-e2e-evidence/
