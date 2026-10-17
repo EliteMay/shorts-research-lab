@@ -53,7 +53,9 @@ export function convertTopicDraft(candidate,{topic,targetSeconds=30,mode}={}) {
   const totalChars=normalized.reduce((sum,s)=>sum+count(s.narration),0);
   // The language model is not an audio clock. An estimated band is only
   // diagnostic; real TTS duration replaces all estimated scene times.
-  const lower=Math.round(85*targetSeconds/30),upper=Math.round(250*targetSeconds/30);
+  // Calibrated with a real Edge TTS run: 92 Japanese chars produced 17.016s
+  // at ja-JP-KeitaNeural +8%, far below the 30s target. Still an estimate.
+  const lower=Math.round(140*targetSeconds/30),upper=Math.round(205*targetSeconds/30);
   if(totalChars<lower||totalChars>upper)
     throw new Error('初稿の台詞量が尺に対して極端です（'+lower+'〜'+upper+'文字に修正）');
   const weights=normalized.map(s=>count(s.narration));

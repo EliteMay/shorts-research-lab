@@ -116,3 +116,39 @@ test('CLI never runs without explicit output path',()=>{
   assert.throws(()=>parseArgs(['--topic','猫']),/必須/);
   assert.throws(()=>parseArgs(['--topic','猫','--out','x','--port','not-number']),/ポート/);
 });
+
+
+test('short generated script is rejected before a misleading 30-second storyboard is saved',()=>{
+  const p=candidate();
+  p.scenes=p.scenes.map((s,i)=>({...s,narration:[
+    'ロボットは鍵を落として慌てました。',
+    '道を戻って探します。',
+    'いつもの場所にもありません。',
+    '最後に首元を確かめます。',
+    '鍵はそこにありました。'][i]}));
+  assert.throws(()=>convertTopicDraft(p,{topic:'鍵をなくしたロボット'}),/140〜205文字/);
+});
+
+test('Qwen3 /nothink applies to original request and retry, but not other models',async()=>{
+  const snapshots=[];
+  const fetchImpl=async (url,options)=>{
+    if(url.endsWith('/models')) return mockResponse({data:[{id:'qwen/qwen3-8b'}]});
+    const body=JSON.parse(options.body);
+    snapshots.push(body.messages.at(-1).content);
+    const content=snapshots.length===1?'{"broken":':JSON.stringify(candidate());
+    return mockResponse({choices:[{message:{content}}]});
+  };
+  const r=await generateWithLocalAI({topic:'鍵をなくしたロボット',fetchImpl});
+  assert.equal(r.attempt,2);
+  assert.equal(snapshots.length,2);
+  assert.ok(snapshots.every(message=>message.endsWith('/nothink')));
+
+  const other=[];
+  await generateWithLocalAI({topic:'鍵をなくしたロボット',model:'qwen2.5-coder-7b-instruct',
+    fetchImpl:async(url,opts)=>{
+      other.push(JSON.parse(opts.body).messages.at(-1).content);
+      return mockResponse({choices:[{message:{content:JSON.stringify(candidate())}}]});
+    }});
+  assert.equal(other.length,1);
+  assert.equal(other[0].includes('/nothink'),false);
+});
