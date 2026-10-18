@@ -139,8 +139,8 @@ export function createEditorServer({ root = DEFAULT_PROJECT_DIR } = {}) {
         const job = renderJobs.get(id);
         const ready = await readCurrentExport(root, id);
         if (job?.state === 'running') send(res, 200, { state: 'running', phase: job.phase });
-        else if (ready) send(res, 200, { state: 'ready', report: ready });
         else if (job?.state === 'failed') send(res, 200, { state: 'failed', phase: job.phase });
+        else if (ready) send(res, 200, { state: 'ready', report: ready });
         else send(res, 200, { state: 'idle' });
         return;
       }
@@ -154,7 +154,9 @@ export function createEditorServer({ root = DEFAULT_PROJECT_DIR } = {}) {
         if (body.rightsChecked !== true) {
           send(res, 400, { error: 'Please confirm background usage rights first' }); return;
         }
+        if (typeof body.withVoice !== 'boolean') { send(res, 400, { error: 'Voice selection is required' }); return; }
         const project = await loadProject(root, id);
+        if (body.withVoice && project.language !== 'en') { send(res, 400, { error: 'Voice output supports English only' }); return; }
         if (!project.background.file) { send(res, 400, { error: 'Background MP4 is required' }); return; }
         if (body.revision !== project.revision) {
           send(res, 409, { error: 'Project has changed. Reload before rendering.' }); return;
@@ -166,16 +168,20 @@ export function createEditorServer({ root = DEFAULT_PROJECT_DIR } = {}) {
         renderJobs.set(id, job);
         const baseUrl = 'http://127.0.0.1:' + req.socket.localPort;
         // Work runs outside the request. Only a single render may consume Chrome/FFmpeg at a time.
-        void renderChatVideo({ root, id, baseUrl, onProgress: phase => { job.phase = phase; } })
+        void renderChatVideo({ root, id, baseUrl, withVoice: body.withVoice, onProgress: phase => { job.phase = phase; } })
           .then(() => { job.state = 'ready'; job.phase = '書き出し完了'; })
           .catch(error => {
-            job.state = 'failed'; job.phase = '書き出し失敗。サーバーログを確認してください。';
+            job.state = 'failed'; job.phase = error.publicMessage ? error.message : '書き出し失敗。サーバーログを確認してください。';
             console.error('[Shorts Studio render]', error);
           });
         send(res, 202, { state: job.state, phase: job.phase });
         return;
       }
       if (req.method === 'GET' && subroute === 'export') {
+        const job = renderJobs.get(id);
+        if (job && (job.state === 'running' || job.state === 'failed')) {
+          send(res, 404, { error: 'No available export from the latest render attempt' }); return;
+        }
         const report = await readCurrentExport(root, id);
         if (!report) { send(res, 404, { error: 'No up-to-date export' }); return; }
         const file = outputFile(root, id);

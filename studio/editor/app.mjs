@@ -50,6 +50,7 @@ async function openProject(id) {
   lastBubbleKey = '';
   renderEditor();
   setupBackground();
+  $('withVoiceChecked').checked = false;
   $('rightsChecked').checked = false;
   rendering = false;
   updateRenderControls();
@@ -321,7 +322,7 @@ async function refreshRenderState() {
       $('downloadRender').hidden = true;
       renderPoll = setTimeout(refreshRenderState, 1250);
     } else if (data.state === 'ready') {
-      $('renderStatus').textContent = '技術プレビュー完成：' + data.report.durationSeconds.toFixed(1) + '秒（音声なし）';
+      $('renderStatus').textContent = '技術プレビュー完成：' + data.report.durationSeconds.toFixed(1) + '秒（' + (data.report.hasAudio ? '英語音声あり / 公開未承認' : '音声なし') + '）';
       $('downloadRender').href = '/api/projects/' + viewing + '/export';
       $('downloadRender').hidden = false;
     } else {
@@ -341,7 +342,7 @@ async function beginRender() {
     await flushSave();
     const data = await request('/api/projects/' + id + '/render', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ revision: project.revision, rightsChecked: true })
+      body: JSON.stringify({ revision: project.revision, rightsChecked: true, withVoice: $('withVoiceChecked').checked })
     });
     if (data.state !== 'running') throw Error('The render did not start');
     rendering = true;
@@ -356,6 +357,7 @@ async function beginRender() {
   }
 }
 $('rightsChecked').addEventListener('change', updateRenderControls);
+$('withVoiceChecked').addEventListener('change', updateRenderControls);
 $('renderButton').addEventListener('click', beginRender);
 
 $('projectTitle').addEventListener('input', e => {

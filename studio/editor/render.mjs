@@ -1,9 +1,10 @@
 import { spawn } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { createReadStream } from 'node:fs';
+
 import { access, mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { loadProject, projectAssetPath, atomicWrite } from './project.mjs';
+import { synthesizeEnglishSpeech, makeAudioFilter } from './voice.mjs';
 
 export const VIDEO_WIDTH = 720;
 export const VIDEO_HEIGHT = 1280;
@@ -31,7 +32,7 @@ export function makeConcat(shots) {
     'file ' + quotedConcatPath(s.image) + '\n' + 'duration ' + s.duration.toFixed(9) + '\n'
   ).join('') + 'file ' + quotedConcatPath(shots.at(-1).image) + '\n';
 }
-function run(command, args, { timeoutMs = 9 * 60_000, cwd } = {}) {
+export function run(command, args, { timeoutMs = 9 * 60_000, cwd } = {}) {
   return new Promise((resolve, reject) => {
     const process = spawn(command, args, { shell: false, windowsHide: true, cwd, stdio: ['ignore', 'pipe', 'pipe'] });
     let output = '', errorOutput = '';
@@ -76,7 +77,7 @@ export async function readCurrentExport(root, id) {
   const folder = path.dirname(projectAssetPath(root, id, 'bg-' + '0'.repeat(36) + '.mp4'));
   try {
     const report = JSON.parse(await readFile(path.join(folder, REPORT_FILE), 'utf8'));
-    if (report.revision !== project.revision || report.schemaVersion !== 1 || report.hasAudio !== false) return null;
+    if (report.revision !== project.revision || report.schemaVersion !== 1 || typeof report.hasAudio !== 'boolean') return null;
     await stat(path.join(folder, RENDER_FILE));
     return report;
   } catch (error) {
@@ -87,7 +88,7 @@ export async function readCurrentExport(root, id) {
 export function outputFile(root, id) {
   return path.join(path.dirname(projectAssetPath(root, id, 'bg-' + '0'.repeat(36) + '.mp4')), RENDER_FILE);
 }
-export async function renderChatVideo({ root, id, baseUrl, onProgress = () => {}, ffmpeg = 'ffmpeg', ffprobe = 'ffprobe' }) {
+export async function renderChatVideo({ root, id, baseUrl, withVoice = false, onProgress = () => {}, ffmpeg = 'ffmpeg', ffprobe = 'ffprobe' }) {
   const project = await loadProject(root, id);
   if (!project.background.file) throw Error('Add a background MP4 before exporting');
   const bg = projectAssetPath(root, id, project.background.file);
@@ -130,21 +131,37 @@ export async function renderChatVideo({ root, id, baseUrl, onProgress = () => {}
     const concat = path.join(work, 'shots.ffconcat');
     await writeFile(concat, makeConcat(snapshots), 'utf8');
     const staged = path.join(work, 'render.mp4');
+    let speech = null;
+    if (withVoice) {
+      onProgress('英語音声を生成して実際の尺を計測中');
+      speech = await synthesizeEnglishSpeech({
+        project, work, python: process.env.SHORTS_PYTHON || 'python', runCommand: run, ffmpeg, ffprobe
+      });
+    }
     onProgress('動く背景と会話をMP4へ合成中');
-    await run(ffmpeg, [
+    const baseInputs = [
       '-hide_banner', '-loglevel', 'error', '-nostdin', '-y',
       '-safe', '0', '-f', 'concat', '-i', concat,
-      '-stream_loop', '-1', '-i', bg,
-      '-filter_complex',
+      '-stream_loop', '-1', '-i', bg
+    ];
+    const backgroundInputs = speech ? speech.files.flatMap(file => ['-i', file]) : [];
+    const filters =
       '[0:v]fps=' + FPS + ',scale=' + VIDEO_WIDTH + ':' + CHAT_HEIGHT + ':flags=lanczos,format=yuv420p[chat];' +
-        '[1:v]fps=' + FPS + ',scale=' + VIDEO_WIDTH + ':' + BG_HEIGHT +
-        ':force_original_aspect_ratio=increase,crop=' + VIDEO_WIDTH + ':' + BG_HEIGHT +
-        ',setsar=1[bg];[chat][bg]vstack=inputs=2,format=yuv420p[v]',
-      '-map', '[v]', '-t', String(project.durationSeconds), '-an',
+      '[1:v]fps=' + FPS + ',scale=' + VIDEO_WIDTH + ':' + BG_HEIGHT +
+      ':force_original_aspect_ratio=increase,crop=' + VIDEO_WIDTH + ':' + BG_HEIGHT +
+      ',setsar=1[bg];[chat][bg]vstack=inputs=2,format=yuv420p[v]' +
+      (speech ? ';' + makeAudioFilter(speech.placements, project.durationSeconds) : '');
+    await run(ffmpeg, [
+      ...baseInputs, ...backgroundInputs,
+      '-filter_complex', filters, '-map', '[v]',
+      ...(speech ? ['-map', '[outa]', '-c:a', 'aac', '-b:a', '160k'] : ['-an']),
+      '-t', String(project.durationSeconds),
       '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20', '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
       staged
     ], { timeoutMs: 9 * 60_000 });
     const output = await inspectVideo(staged, ffprobe);
+    const streams = JSON.parse(await run(ffprobe, ['-v', 'error', '-show_entries', 'stream=codec_type', '-of', 'json', staged], { timeoutMs: 20_000 })).streams || [];
+    if (streams.some(s => s.codec_type === 'audio') !== Boolean(speech)) throw Error('The output audio stream does not match the selected mode');
     if (output.width !== VIDEO_WIDTH || output.height !== VIDEO_HEIGHT ||
         Math.abs(output.duration - project.durationSeconds) > .08) throw Error('Rendered MP4 dimensions or duration invalid');
     const latest = await loadProject(root, id);
@@ -156,8 +173,12 @@ export async function renderChatVideo({ root, id, baseUrl, onProgress = () => {}
       schemaVersion: 1, revision: project.revision, exportedAt: new Date().toISOString(),
       width: VIDEO_WIDTH, height: VIDEO_HEIGHT, fps: FPS, durationSeconds: output.duration,
       sizeBytes: buffer.length, sha256: createHash('sha256').update(buffer).digest('hex'),
-      hasAudio: false, qualityApproved: false,
-      note: 'Silent technical preview. Music, dialogue audio, and human quality review are not included.'
+      hasAudio: Boolean(speech), voiceProvider: speech?.provider ?? null,
+      speechTimings: speech?.placements ?? [],
+      voices: speech?.voices ?? [],
+      providerRightsVerified: false, qualityApproved: false,
+      note: speech ? 'Voiced technical preview. External TTS service terms and human sound/content quality are unreviewed.' :
+        'Silent technical preview. Human quality review is not included.'
     };
     await rename(staged, path.join(folder, RENDER_FILE));
     await atomicWrite(path.join(folder, REPORT_FILE), JSON.stringify(report, null, 2) + '\n');
