@@ -1,5 +1,13 @@
 # Shorts Studio（段階的な増設）
 
+## 2026-10-18：Windowsデスクトップアプリ化（Electron）
+
+- [Windows Electron版](desktop/README.md) を増設。既存チャット編集画面を独立ウィンドウとして開き、内部Nodeサーバーを自動起動・単一起動制御・権限制限を設定。ブラウザ画面とproject.json正本は共有し、既存保存先 `D:\AI\shorts-studio-projects` を維持。
+- `cd studio; npm run desktop` で開発起動。実機ではパッケージ化した `Shorts Studio.exe` の直接起動、会話編集と保存、英語音声付きH.264/AAC技術MP4の出力を検証。配布用のポータブルEXEとWindowsインストーラーは `npm run desktop:build` で生成。
+- 動画処理に必要なFFmpeg/FFprobeはWindowsビルドへ同梱。Electron独自キャッシュはD:\AI側に置き、プロジェクト保存データと分離。英語TTSのみ外部ネットワーク・Python環境と未検証の商用条件が残る。完成動画の公開品質検証は今後。
+
+
+
 ## 2026-10-18：英語キャラクター別TTSの追加
 
 - 編集画面のMP4技術書き出しに、オプションで話者別の英語音声（Edge TTS、外部ネットワーク利用）を合成できるようにした。実際の音声長を計測し、吹き出し表示時刻と同期し、重なりは拒否する。映像720×1280/H.264、音声AAC。従来の無音書き出しも選択可能。

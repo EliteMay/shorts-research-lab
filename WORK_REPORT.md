@@ -1,3 +1,11 @@
+## 2026-10-18：Windows Electronアプリ化
+
+- ユーザー要望に合わせブラウザ中心の制作環境をWindowsアプリ化。 `studio/desktop/` にElectron Main、単一起動、127.0.0.1自動サーバー、画面のsandbox/contextIsolation、外部ナビゲーション/ポップアップ/OS権限拒否、書き出し中終了防止、アプリ固有Iconを実装。編集画面とAPIは既存コードを再利用し二重正本を作らない。
+- Windows用に `electron@44.9.0`・`electron-builder@26.15.3` を固定。FFmpeg 8.1 full-buildからレンダー実行ファイルとGPL配布テキストをGit管理外のビルド素材として同梱。既存Projectは `D:\AI\shorts-studio-projects` に保持し、ElectronキャッシュはD:\AI別ディレクトリ。
+- 実WindowsでElectron開発版/パッケージ化したwin-unpacked EXEを実起動し、プロジェクト作成→台本編集→保存、720x1280/12秒の背景動画と英語話者別TTS音声のH.264/AAC生成を確認。実行時にShellやChromeタブ不要（動画撮影エンジンはインストール済みChrome/Edgeを内部利用）。
+- `npm test` 64件PASS、既存Python回帰23件PASS。完成したセットアップEXE/ポータブルEXE（各約200MB）を `D:\AI\exports` に保存。独立起動用の `D:\AI\apps\ShortsStudio-0.2.0\Shorts Studio.exe` とデスクトップの `Shorts Studio.lnk` を作成し、配置済みEXEから編集・保存と音声付き12秒MP4出力まで再テスト成功。
+- ポータブルEXE/インストーラーは**未署名・個人試作**。NSISインストーラー自体の対話インストールとSmartScreen、公式更新、一般公開時のGPL配布義務、英語TTS商用条件、完成動画の通し視聴は未確認。二重起動の独立E2Eは既存のアプリ実行中プロセスと干渉したため最終判定を保留。
+
 ## 2026-10-18：英語キャラクター別音声のMP4合成
 
 - 既存のローカルChat Editorに**任意の英語AI音声**を追加。`Mom`等の話者ごとにJenny/Guy等の声を固定割当、セリフごとのEdge TTS MP3を生成してFFprobeで実尺を測り、開始位置を吹き出し表示秒数に揃えてAAC音声を合成。先頭無音のみ50msの余裕を残して調整し、途中の自然な間は保持。音声が次の発言や動画終了に重なる場合はエラーで止める。

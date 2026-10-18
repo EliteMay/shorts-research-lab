@@ -88,7 +88,7 @@ export async function readCurrentExport(root, id) {
 export function outputFile(root, id) {
   return path.join(path.dirname(projectAssetPath(root, id, 'bg-' + '0'.repeat(36) + '.mp4')), RENDER_FILE);
 }
-export async function renderChatVideo({ root, id, baseUrl, withVoice = false, onProgress = () => {}, ffmpeg = 'ffmpeg', ffprobe = 'ffprobe' }) {
+export async function renderChatVideo({ root, id, baseUrl, withVoice = false, onProgress = () => {}, ffmpeg = process.env.SHORTS_FFMPEG || 'ffmpeg', ffprobe = process.env.SHORTS_FFPROBE || 'ffprobe' }) {
   const project = await loadProject(root, id);
   if (!project.background.file) throw Error('Add a background MP4 before exporting');
   const bg = projectAssetPath(root, id, project.background.file);

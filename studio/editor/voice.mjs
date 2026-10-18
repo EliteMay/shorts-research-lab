@@ -59,7 +59,7 @@ export async function synthesizeEnglishSpeech({ project, work, python, runComman
   let response;
   try {
     response = await runCommand(python, [
-      path.join(THIS_DIR, 'voice_sync.py'), '--input', script, '--output', clipsDir
+      (process.env.SHORTS_VOICE_SCRIPT || path.join(THIS_DIR, 'voice_sync.py')), '--input', script, '--output', clipsDir
     ], { timeoutMs: 240_000 });
   } catch (error) {
     const publicError = new Error('英語音声の生成に失敗しました。ネット接続・Pythonのedge-tts環境を確認してください。');

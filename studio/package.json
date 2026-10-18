@@ -1,5 +1,9 @@
 {
-  "name": "shorts-studio-quality-gate",
+  "name": "shorts-studio",
+  "version": "0.2.0",
+  "productName": "Shorts Studio",
+  "description": "Local editor for original chat comedy Shorts",
+  "main": "desktop/main.mjs",
   "private": true,
   "type": "module",
   "engines": {
@@ -10,9 +14,46 @@
     "check:example": "node src/quality-check.mjs examples/storyboard.json",
     "check:ready": "node src/quality-check.mjs examples/storyboard.json --ready",
     "generate:draft": "node generation/generate.mjs",
-    "start:editor": "node editor/server.mjs"
+    "start:editor": "node editor/server.mjs",
+    "desktop": "electron desktop/main.mjs",
+    "desktop:prepare": "node desktop/prepare-runtime.mjs",
+    "desktop:unpacked": "npm run desktop:prepare && electron-builder --win dir --x64 --publish never",
+    "desktop:build": "npm run desktop:prepare && electron-builder --win portable nsis --x64 --publish never"
   },
   "dependencies": {
     "playwright-core": "1.56.1"
+  },
+  "devDependencies": {
+    "electron": "44.9.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "jp.elitemay.shortsstudio",
+    "productName": "Shorts Studio",
+    "asar": true,
+    "asarUnpack": ["editor/voice_sync.py"],
+    "directories": { "output": "desktop-dist" },
+    "files": [
+      "desktop/main.mjs",
+      "desktop/runtime.mjs",
+      "desktop/assets/shorts-studio.ico",
+      "editor/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      { "from": "desktop/.runtime", "to": "bin", "filter": ["ffmpeg.exe", "ffprobe.exe", "FFmpeg-LICENSE.txt"] }
+    ],
+    "win": {
+      "icon": "desktop/assets/shorts-studio.ico",
+      "target": ["portable", "nsis"]
+    },
+    "portable": { "artifactName": "Shorts-Studio-Portable-${version}-${arch}.${ext}" },
+    "nsis": {
+      "artifactName": "Shorts-Studio-Setup-${version}-${arch}.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   }
 }

@@ -5,3 +5,7 @@ studio/review-e2e-evidence/
 # Transient Python test and runtime bytecode
 **/__pycache__/
 *.pyc
+
+# Electron Windows build output and copied local codec binaries
+studio/desktop-dist/
+studio/desktop/.runtime/

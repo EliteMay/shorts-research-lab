@@ -32,6 +32,9 @@ YouTube Shortsをジャンル横断で分析し、「人がなぜ見続けるの
 
 ## Shorts Studio（制作機能の増設）
 
+- **Windowsアプリ（2026-10-18）**：[Shorts Studio Desktop（Electron）](studio/desktop/README.md)。Windows用EXEで独立起動・編集/保存・動画書き出し。Web版は継続利用可能。署名なしの個人試作で、公開前の品質・権利承認は未実施。
+
+
 - **新規（2026-10-18）**：[英語チャットShortsのローカル制作エディター](studio/editor/README.md)。台本/時刻/背景MP4を編集・プレビュー・自動保存するWeb UI。`cd studio && npm ci && npm run start:editor`。**無音／英語AI音声付きの技術MP4**を生成可能（英語TTSは外部ネットワーク送信、商用条件未確認）。公開用の完成動画は未承認。
 
 

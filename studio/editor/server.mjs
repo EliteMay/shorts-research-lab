@@ -82,7 +82,7 @@ export function createEditorServer({ root = DEFAULT_PROJECT_DIR } = {}) {
       if (locks.get(id) === current) locks.delete(id);
     }
   }
-  return http.createServer(async (req, res) => {
+  const server = http.createServer(async (req, res) => {
     try {
       if (req.headers.host !== '127.0.0.1:' + req.socket.localPort) {
         send(res, 403, { error: 'Invalid host' }); return;
@@ -201,6 +201,8 @@ export function createEditorServer({ root = DEFAULT_PROJECT_DIR } = {}) {
       if (status === 500) console.error('[Shorts Studio]', error);
     }
   });
+  server.hasRunningJobs = () => [...renderJobs.values()].some(job => job.state === 'running');
+  return server;
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const root = process.env.SHORTS_STUDIO_PROJECTS_DIR || DEFAULT_PROJECT_DIR;
