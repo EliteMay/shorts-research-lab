@@ -1,3 +1,33 @@
+## 2026-10-18：Windows Electronアプリ化
+
+- ユーザー要望に合わせブラウザ中心の制作環境をWindowsアプリ化。 `studio/desktop/` にElectron Main、単一起動、127.0.0.1自動サーバー、画面のsandbox/contextIsolation、外部ナビゲーション/ポップアップ/OS権限拒否、書き出し中終了防止、アプリ固有Iconを実装。編集画面とAPIは既存コードを再利用し二重正本を作らない。
+- Windows用に `electron@44.9.0`・`electron-builder@26.15.3` を固定。FFmpeg 8.1 full-buildからレンダー実行ファイルとGPL配布テキストをGit管理外のビルド素材として同梱。既存Projectは `D:\AI\shorts-studio-projects` に保持し、ElectronキャッシュはD:\AI別ディレクトリ。
+- 実WindowsでElectron開発版/パッケージ化したwin-unpacked EXEを実起動し、プロジェクト作成→台本編集→保存、720x1280/12秒の背景動画と英語話者別TTS音声のH.264/AAC生成を確認。実行時にShellやChromeタブ不要（動画撮影エンジンはインストール済みChrome/Edgeを内部利用）。
+- `npm test` 64件PASS、既存Python回帰23件PASS。完成したセットアップEXE/ポータブルEXE（各約200MB）を `D:\AI\exports` に保存。独立起動用の `D:\AI\apps\ShortsStudio-0.2.0\Shorts Studio.exe` とデスクトップの `Shorts Studio.lnk` を作成し、配置済みEXEから編集・保存と音声付き12秒MP4出力まで再テスト成功。
+- ポータブルEXE/インストーラーは**未署名・個人試作**。NSISインストーラー自体の対話インストールとSmartScreen、公式更新、一般公開時のGPL配布義務、英語TTS商用条件、完成動画の通し視聴は未確認。二重起動の独立E2Eは既存のアプリ実行中プロセスと干渉したため最終判定を保留。
+
+## 2026-10-18：英語キャラクター別音声のMP4合成
+
+- 既存のローカルChat Editorに**任意の英語AI音声**を追加。`Mom`等の話者ごとにJenny/Guy等の声を固定割当、セリフごとのEdge TTS MP3を生成してFFprobeで実尺を測り、開始位置を吹き出し表示秒数に揃えてAAC音声を合成。先頭無音のみ50msの余裕を残して調整し、途中の自然な間は保持。音声が次の発言や動画終了に重なる場合はエラーで止める。
+- GUIでは英語音声利用を明示的に選択。TTSへの**会話テキスト外部送信**と商用利用条件が未確認であることを明記し、無音の従来方式は継続。書き出しレポートに音声の有無、話者ボイス、タイミング、未承認状態を記録。作品本体のschemaVersionを変更しない。
+- Windows実機で12.000秒720×1280のチャット映像+背景+英語2種音声(AAC)をChrome/FFmpeg経由で書き出し、ダウンロードサイズ・SHA256・映像と音声両トラック・編集後の旧ファイル拒否を確認。silencedetectでも声の開始位置を確認。実際の通し試聴/公開品質確認は未実施。
+- 既存音声検証資産は保持。外部ネットワークTTSには継続提供・商用利用・プライバシー面の制約があるため、**商用公開前に利用条件を確認するか、商用に使えるローカルTTSへ切替検証が必要**。
+
+## 2026-10-18：ブラウザチャット画面→動く背景つきMP4出力
+
+- 既存の編集・保存を維持し、`studio/editor/render.mjs` でChromeの会話UIスクリーンショットをメッセージ時刻で撮影、FFmpeg concat + loopしたMP4背景で合成。720×1280/30fpsのH.264無音プレビューを生成。周期的な画面揺れは使用しない。
+- ローカルWeb UIにボタン/使用権確認/処理状況/ダウンロードを接続。FFprobeで入力・出力の動画情報を検査、プロジェクトrevisionに基づく無効化・途中編集によるレンダリング拒否・同時レンダリング拒否。出力レポートにsha256・hasAudio:false・qualityApproved:falseを記録。
+- Windows ChromeとFFmpeg実機で**12.000秒 / 720×1280 / 360フレーム**の実出力・ダウンロード、hash照合、音声stream不在、編集後の旧動画404、HTML画面の動作とエラー0件を検証。テスト用背景はFFmpeg生成素材で、実際の外部素材の権利確認ではない。
+- 追加Dependencyは `playwright-core@1.56.1`（Chrome/Edgeは既存PCのものを使用）。有料動画APIは不要。未実装：英語TTS・声別音声mix・正確な音声字幕・チャット吹き出しの出現モーション・視聴品質の承認。既存PR #13の台本検証ブランチは独立。
+
+## 2026-10-18：英語Chat Shortsの制作エディター基盤
+
+- 英語チャットコメディを第一制作ジャンルとして、ChatGPTで台本検討→ローカルWebエディターで制作→実コンポジションで音声・動画化→品質検査→将来Electron化と段階分離。日本語30秒の既存実験は破壊せず保持。
+- `studio/editor/` にNode標準HTTPサーバー+Chat UI、9:16 CSSプレビュー、秒数指定・再生/シーク、64MiB以下MP4取込、ローカル`project.json`保存、JSON台本入出力を実装。テキストは`textContent`、Origin/Host/CSP、スキーマ・時刻・revision衝突・安全なAsset Pathを検査。巨大依存なし。
+- Windows家PCで既存テスト含むNode 56件PASS（競合保存の同時PUT検査を含む）。Chrome E2Eで新規作成→編集→自動保存/再読込→MP4取込→再読込→JSON入出力→390px画面の横溢れなし→JS例外なしを確認。
+- 実画面で大量メッセージの表示切れを検出したため、同時表示の最新3件へ制限。コンポジションによるWYSIWYG / キャラクター音声 / 最終MP4書き出し / 著作権承認 / 一括生成は**未実装**。技術プレビューの正常動作と公開可能品質を混同しない。
+- 今回の編集データはテスト用の一時保存ルート（端末実機）を使い、GitHubへ動画・素材は追加しない。詳細は [studio/editor/README.md](studio/editor/README.md)。
+
 ## 2026-10-15：テーマ→ローカルAI台本・絵コンテの初稿生成
 
 - [PR #12](https://github.com/EliteMay/shorts-research-lab/pull/12) をmainへ統合。テーマを入力するとLM Studio等のOpenAI互換ローカルAPI（127.0.0.1のみ）で日本語30秒Shortsの台本・絵コンテ案を作る `studio/generation/` のCLIを追加した。
